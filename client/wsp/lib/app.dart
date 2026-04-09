@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wsp/features/auth/login_page.dart';
 import 'features/home/home_shell.dart';
 
 class WspolnicyApp extends StatelessWidget {
@@ -13,7 +14,7 @@ class WspolnicyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const HomeShell(),
+      home: const LoginPage(),
     );
   }
 }
