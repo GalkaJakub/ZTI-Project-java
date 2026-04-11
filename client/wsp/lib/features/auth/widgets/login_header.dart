@@ -10,16 +10,16 @@ class LoginHeader extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 92,
-          height: 92,
+          width: 184,
+          height: 184,
           decoration: BoxDecoration(
             color: const Color(0xFFE8F1FF),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Image.asset(
             'assets/images/logo.png', 
-            width: 74,
-            height: 74,
+            width: 90,
+            height: 90,
           ),
           
         ),
