@@ -33,6 +33,9 @@ public class ShoppingItemService {
     }
 
     public void delete(Long id) {
+        if (!shoppingItemRepository.existsById(id)) {
+            throw new RuntimeException("Shopping item not found");
+        }
         shoppingItemRepository.deleteById(id);
     }
 }

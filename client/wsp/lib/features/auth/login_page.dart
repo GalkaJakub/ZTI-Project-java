@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wsp/features/auth/widgets/login_header.dart';
 import 'package:wsp/features/auth/widgets/login_card.dart';
+import 'package:wsp/features/auth/widgets/login_header.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -17,18 +17,26 @@ class LoginPage extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: const SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                Spacer(flex: 2),
-                LoginHeader(),
-                Spacer(),
-                LoginCard(),
-                Spacer(flex: 2),
-              ],
-            ),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 32),
+                      LoginHeader(),
+                      SizedBox(height: 36),
+                      LoginCard(),
+                      SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
