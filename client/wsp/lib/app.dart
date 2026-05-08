@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:wsp/features/auth/login_page.dart';
-import 'features/home/home_shell.dart';
 
 class WspolnicyApp extends StatelessWidget {
   const WspolnicyApp({super.key});

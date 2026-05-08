@@ -14,7 +14,7 @@ class LoginCard extends StatefulWidget {
 
 class _LoginCardState extends State<LoginCard> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _displayNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -28,7 +28,7 @@ class _LoginCardState extends State<LoginCard> {
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _displayNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -43,20 +43,19 @@ class _LoginCardState extends State<LoginCard> {
     setState(() => _loading = true);
 
     try {
-      final result = _isRegisterMode
+      final response = _isRegisterMode
           ? await _authService.register(
-              username: _usernameController.text,
+              displayName: _displayNameController.text,
               email: _emailController.text,
               password: _passwordController.text,
             )
           : await _authService.signIn(
-              username: _usernameController.text,
+              email: _emailController.text,
               password: _passwordController.text,
             );
 
       if (!mounted) return;
-
-      debugPrint('Backend response: $result');
+      debugPrint('Logged in as ${response.user.email}');
 
       Navigator.pushReplacement(
         context,
@@ -66,9 +65,9 @@ class _LoginCardState extends State<LoginCard> {
       if (!mounted) return;
 
       final action = _isRegisterMode ? 'rejestracji' : 'logowania';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Błąd $action: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Błąd $action: $e')));
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -113,50 +112,56 @@ class _LoginCardState extends State<LoginCard> {
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _usernameController,
-                autofillHints: const [AutofillHints.username],
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Login',
-                  prefixIcon: Icon(Icons.person_outline),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Podaj login';
-                  }
-
-                  return null;
-                },
-              ),
               if (_isRegisterMode) ...[
-                const SizedBox(height: 14),
                 TextFormField(
-                  controller: _emailController,
-                  autofillHints: const [AutofillHints.email],
-                  keyboardType: TextInputType.emailAddress,
+                  controller: _displayNameController,
+                  autofillHints: const [AutofillHints.name],
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.alternate_email),
+                    labelText: 'Nazwa użytkownika',
+                    prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
-                    final email = value?.trim() ?? '';
+                    final displayName = value?.trim() ?? '';
 
-                    if (email.isEmpty) {
-                      return 'Podaj email';
+                    if (displayName.isEmpty) {
+                      return 'Podaj nazwę użytkownika';
                     }
 
-                    if (!email.contains('@')) {
-                      return 'Podaj poprawny email';
+                    if (displayName.length > 40) {
+                      return 'Nazwa może mieć maksymalnie 40 znaków';
                     }
 
                     return null;
                   },
                 ),
+                const SizedBox(height: 14),
               ],
+              TextFormField(
+                controller: _emailController,
+                autofillHints: const [AutofillHints.email],
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.alternate_email),
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  final email = value?.trim() ?? '';
+
+                  if (email.isEmpty) {
+                    return 'Podaj email';
+                  }
+
+                  if (!email.contains('@')) {
+                    return 'Podaj poprawny email';
+                  }
+
+                  return null;
+                },
+              ),
               const SizedBox(height: 14),
               TextFormField(
                 controller: _passwordController,
@@ -174,8 +179,7 @@ class _LoginCardState extends State<LoginCard> {
                   labelText: 'Hasło',
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    tooltip:
-                        _obscurePassword ? 'Pokaż hasło' : 'Ukryj hasło',
+                    tooltip: _obscurePassword ? 'Pokaż hasło' : 'Ukryj hasło',
                     onPressed: () {
                       setState(() {
                         _obscurePassword = !_obscurePassword;
@@ -194,8 +198,8 @@ class _LoginCardState extends State<LoginCard> {
                     return 'Podaj hasło';
                   }
 
-                  if (_isRegisterMode && value.length < 6) {
-                    return 'Hasło musi mieć co najmniej 6 znaków';
+                  if (_isRegisterMode && value.length < 8) {
+                    return 'Hasło musi mieć co najmniej 8 znaków';
                   }
 
                   return null;

@@ -18,8 +18,7 @@ class SignInButton extends StatelessWidget {
       height: 54,
       child: FilledButton(
         onPressed: loading ? null : onPressed,
-        child: loading
-            ? const SizedBox(
+        child: loading ? const SizedBox(
                 width: 22,
                 height: 22,
                 child: CircularProgressIndicator(

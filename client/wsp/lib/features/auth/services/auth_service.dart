@@ -1,47 +1,74 @@
+import 'dart:convert';
+
+import 'package:wsp/core/auth/auth_token_storage.dart';
 import 'package:wsp/core/network/api_client.dart';
+import 'package:wsp/features/auth/models/auth_response.dart';
 
 class AuthService {
-  AuthService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+  AuthService({ApiClient? apiClient, AuthTokenStorage? tokenStorage})
+    : _apiClient = apiClient ?? ApiClient(tokenStorage: tokenStorage),
+      _tokenStorage = tokenStorage ?? AuthTokenStorage();
 
   final ApiClient _apiClient;
+  final AuthTokenStorage _tokenStorage;
 
-  Future<String> signIn({
-    required String username,
+  Future<AuthResponse> signIn({
+    required String email,
     required String password,
   }) async {
     try {
-      return await _apiClient.postJson(
+      final response = await _apiClient.postJson(
         '/api/auth/login',
-        body: {
-          'username': username.trim(),
-          'password': password,
-        },
+        body: {'email': email.trim(), 'password': password},
       );
+
+      return _saveSession(response);
     } on ApiException catch (e) {
       if (e.statusCode == 401 || e.statusCode == 403) {
-        throw const AuthException('Nieprawidłowy login lub hasło.');
+        throw const AuthException('Nieprawidłowy email lub hasło.');
       }
 
       throw AuthException(e.message);
     }
   }
 
-  Future<String> register({
-    required String username,
+  Future<AuthResponse> register({
+    required String displayName,
     required String email,
     required String password,
   }) async {
     try {
-      return await _apiClient.postJson(
+      final response = await _apiClient.postJson(
         '/api/auth/register',
         body: {
-          'username': username.trim(),
           'email': email.trim(),
           'password': password,
+          'displayName': displayName.trim(),
         },
       );
+
+      return _saveSession(response);
     } on ApiException catch (e) {
       throw AuthException(e.message);
+    }
+  }
+
+  Future<void> signOut() {
+    return _tokenStorage.clear();
+  }
+
+  Future<AuthResponse> _saveSession(String responseBody) async {
+    try {
+      final response = AuthResponse.fromJson(
+        jsonDecode(responseBody) as Map<String, dynamic>,
+      );
+
+      await _tokenStorage.saveAccessToken(response.accessToken);
+      return response;
+    } on FormatException {
+      throw const AuthException('Serwer zwrócił niepoprawną odpowiedź.');
+    } on TypeError {
+      throw const AuthException('Serwer zwrócił niepoprawną odpowiedź.');
     }
   }
 }
