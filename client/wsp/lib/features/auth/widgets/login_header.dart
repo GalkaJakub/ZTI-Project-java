@@ -16,12 +16,7 @@ class LoginHeader extends StatelessWidget {
             color: const Color(0xFFE8F1FF),
             borderRadius: BorderRadius.circular(24),
           ),
-          child: Image.asset(
-            'assets/images/logo.png', 
-            width: 90,
-            height: 90,
-          ),
-          
+          child: Image.asset('assets/images/logo.png', width: 90, height: 90),
         ),
         const SizedBox(height: 24),
         Text(
@@ -38,6 +33,5 @@ class LoginHeader extends StatelessWidget {
         ),
       ],
     );
-    
   }
 }

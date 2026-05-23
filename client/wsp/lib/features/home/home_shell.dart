@@ -4,7 +4,6 @@ import '../meals/meals_page.dart';
 import '../recipes/recipes_page.dart';
 import '../shopping/shopping_page.dart';
 import '../profile/profile_page.dart';
-import 'home_page.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -17,7 +16,6 @@ class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
-    HomePage(),
     MealsPage(),
     ShoppingPage(),
     RecipesPage(),
@@ -37,11 +35,6 @@ class _HomeShellState extends State<HomeShell> {
           });
         },
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Start',
-          ),
           NavigationDestination(
             icon: Icon(Icons.calendar_today_outlined),
             selectedIcon: Icon(Icons.calendar_today),

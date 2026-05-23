@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:wsp/core/widgets/page_error_view.dart';
 import 'package:wsp/features/auth/login_page.dart';
 import 'package:wsp/features/auth/services/auth_service.dart';
 import 'package:wsp/features/profile/models/profile_user.dart';
 import 'package:wsp/features/profile/services/profile_service.dart';
+import 'package:wsp/features/profile/widgets/action_tile.dart';
+import 'package:wsp/features/profile/widgets/info_tile.dart';
+import 'package:wsp/features/profile/widgets/profile_header.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -139,7 +143,8 @@ class _ProfilePageState extends State<ProfilePage> {
             }
 
             if (snapshot.hasError) {
-              return _ProfileError(
+              return PageErrorView(
+                title: 'Nie udało się pobrać profilu',
                 message: snapshot.error.toString(),
                 onRetry: () => _refreshProfile(),
               );
@@ -152,32 +157,32 @@ class _ProfilePageState extends State<ProfilePage> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  _ProfileHeader(user: user),
+                  ProfileHeader(user: user),
                   const SizedBox(height: 20),
-                  _InfoTile(
+                  InfoTile(
                     icon: Icons.alternate_email,
                     title: 'Email',
                     value: user.email,
                   ),
-                  _InfoTile(
+                  InfoTile(
                     icon: Icons.badge_outlined,
                     title: 'ID konta',
                     value: user.id.toString(),
                   ),
                   const SizedBox(height: 20),
-                  _ActionTile(
+                  ActionTile(
                     icon: Icons.edit_outlined,
                     title: 'Zmień nazwę',
                     subtitle: 'Nazwa widoczna w aplikacji',
                     onTap: () => _changeDisplayName(user),
                   ),
-                  _ActionTile(
+                  ActionTile(
                     icon: Icons.refresh,
                     title: 'Odśwież dane',
                     subtitle: 'Pobierz aktualny profil z serwera',
                     onTap: () => _refreshProfile(),
                   ),
-                  _ActionTile(
+                  ActionTile(
                     icon: Icons.logout,
                     title: 'Wyloguj',
                     subtitle: 'Usuń token z tego urządzenia',
@@ -188,165 +193,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({required this.user});
-
-  final ProfileUser user;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 42,
-            backgroundColor: const Color(0xFF2563EB),
-            child: Text(
-              user.initials,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            user.displayName,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Twoje konto Wspólników',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: const Color(0xFF64748B),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoTile extends StatelessWidget {
-  const _InfoTile({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String title;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF2563EB)),
-        title: Text(title),
-        subtitle: Text(value),
-      ),
-    );
-  }
-}
-
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.danger = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  final bool danger;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = danger ? const Color(0xFFDC2626) : const Color(0xFF2563EB);
-
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: color),
-        title: Text(title, style: TextStyle(color: danger ? color : null)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      ),
-    );
-  }
-}
-
-class _ProfileError extends StatelessWidget {
-  const _ProfileError({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 44, color: Color(0xFFDC2626)),
-            const SizedBox(height: 12),
-            const Text(
-              'Nie udało się pobrać profilu',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF64748B)),
-            ),
-            const SizedBox(height: 18),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Spróbuj ponownie'),
-            ),
-          ],
         ),
       ),
     );

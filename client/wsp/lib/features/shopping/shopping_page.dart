@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:wsp/core/widgets/empty_state_card.dart';
+import 'package:wsp/core/widgets/page_error_view.dart';
 import 'package:wsp/features/groups/models/user_group.dart';
 import 'package:wsp/features/groups/services/active_group_storage.dart';
 import 'package:wsp/features/groups/services/group_service.dart';
+import 'package:wsp/features/shopping/models/new_shopping_item.dart';
 import 'package:wsp/features/shopping/models/shopping_item.dart';
 import 'package:wsp/features/shopping/services/shopping_service.dart';
+import 'package:wsp/features/shopping/widgets/add_shopping_item_dialog.dart';
+import 'package:wsp/features/shopping/widgets/shopping_header.dart';
+import 'package:wsp/features/shopping/widgets/shopping_item_tile.dart';
 
 class ShoppingPage extends StatefulWidget {
   const ShoppingPage({super.key});
@@ -135,69 +141,11 @@ class _ShoppingPageState extends State<ShoppingPage> {
     }
   }
 
-  Future<_NewShoppingItem?> _showAddItemDialog() async {
-    final nameController = TextEditingController();
-    final quantityController = TextEditingController();
-
-    final item = await showDialog<_NewShoppingItem>(
+  Future<NewShoppingItem?> _showAddItemDialog() async {
+    return showDialog<NewShoppingItem>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Nowy produkt'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                autofocus: true,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.shopping_bag_outlined),
-                  labelText: 'Produkt',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: quantityController,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.scale_outlined),
-                  labelText: 'Ilość',
-                  hintText: 'np. 2 kg',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Anuluj'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                final quantity = quantityController.text.trim();
-
-                if (name.isEmpty || quantity.isEmpty) {
-                  return;
-                }
-
-                Navigator.pop(
-                  context,
-                  _NewShoppingItem(name: name, quantity: quantity),
-                );
-              },
-              child: const Text('Dodaj'),
-            ),
-          ],
-        );
-      },
+      builder: (_) => const AddShoppingItemDialog(),
     );
-
-    nameController.dispose();
-    quantityController.dispose();
-    return item;
   }
 
   void _showMessage(String message) {
@@ -224,7 +172,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
             }
 
             if (snapshot.hasError) {
-              return _ShoppingError(
+              return PageErrorView(
                 message: snapshot.error.toString(),
                 onRetry: _refresh,
               );
@@ -237,19 +185,25 @@ class _ShoppingPageState extends State<ShoppingPage> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  _ShoppingHeader(
+                  ShoppingHeader(
                     groups: data.groups,
                     selectedGroup: data.selectedGroup,
                     onGroupChanged: _changeGroup,
                   ),
                   const SizedBox(height: 18),
                   if (data.groups.isEmpty)
-                    const _NoGroupCard()
+                    const EmptyStateCard(
+                      icon: Icons.groups_outlined,
+                      message: 'Najpierw utwórz albo wybierz grupę.',
+                    )
                   else if (data.items.isEmpty)
-                    const _EmptyShoppingList()
+                    const EmptyStateCard(
+                      icon: Icons.playlist_add_check,
+                      message: 'Lista tej grupy jest pusta.',
+                    )
                   else
                     for (final item in data.items)
-                      _ShoppingItemTile(
+                      ShoppingItemTile(
                         item: item,
                         onToggle: () => _toggleItem(item),
                         onDelete: () => _deleteItem(item),
@@ -275,196 +229,4 @@ class _ShoppingPageData {
   final List<UserGroup> groups;
   final UserGroup? selectedGroup;
   final List<ShoppingItem> items;
-}
-
-class _NewShoppingItem {
-  const _NewShoppingItem({required this.name, required this.quantity});
-
-  final String name;
-  final String quantity;
-}
-
-class _ShoppingHeader extends StatelessWidget {
-  const _ShoppingHeader({
-    required this.groups,
-    required this.selectedGroup,
-    required this.onGroupChanged,
-  });
-
-  final List<UserGroup> groups;
-  final UserGroup? selectedGroup;
-  final ValueChanged<int> onGroupChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2563EB),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(Icons.shopping_cart, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Lista zakupów',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: const Color(0xFF0F172A),
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ],
-        ),
-        if (groups.isNotEmpty) ...[
-          const SizedBox(height: 14),
-          DropdownButtonFormField<int>(
-            initialValue: selectedGroup?.id,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.groups_outlined),
-              labelText: 'Grupa',
-              border: OutlineInputBorder(),
-              filled: true,
-              fillColor: Colors.white,
-            ),
-            items: [
-              for (final group in groups)
-                DropdownMenuItem(value: group.id, child: Text(group.name)),
-            ],
-            onChanged: (value) {
-              if (value != null) {
-                onGroupChanged(value);
-              }
-            },
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _ShoppingItemTile extends StatelessWidget {
-  const _ShoppingItemTile({
-    required this.item,
-    required this.onToggle,
-    required this.onDelete,
-  });
-
-  final ShoppingItem item;
-  final VoidCallback onToggle;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      child: ListTile(
-        leading: Checkbox(value: item.bought, onChanged: (_) => onToggle()),
-        title: Text(
-          item.name,
-          style: TextStyle(
-            color: const Color(0xFF0F172A),
-            fontWeight: FontWeight.w700,
-            decoration: item.bought ? TextDecoration.lineThrough : null,
-          ),
-        ),
-        subtitle: Text(item.quantity),
-        trailing: IconButton(
-          tooltip: 'Usuń',
-          onPressed: onDelete,
-          icon: const Icon(Icons.delete_outline),
-          color: const Color(0xFFDC2626),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyShoppingList extends StatelessWidget {
-  const _EmptyShoppingList();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.playlist_add_check, color: Color(0xFF2563EB)),
-          SizedBox(width: 12),
-          Expanded(child: Text('Lista tej grupy jest pusta.')),
-        ],
-      ),
-    );
-  }
-}
-
-class _NoGroupCard extends StatelessWidget {
-  const _NoGroupCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.groups_outlined, color: Color(0xFF2563EB)),
-          SizedBox(width: 12),
-          Expanded(child: Text('Najpierw utwórz albo wybierz grupę.')),
-        ],
-      ),
-    );
-  }
-}
-
-class _ShoppingError extends StatelessWidget {
-  const _ShoppingError({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 40),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Spróbuj ponownie'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
