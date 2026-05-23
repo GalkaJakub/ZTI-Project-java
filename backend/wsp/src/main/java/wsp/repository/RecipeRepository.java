@@ -3,6 +3,7 @@ package wsp.repository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import wsp.entity.Recipe;
+import wsp.entity.UserGroup;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,8 +11,8 @@ import java.util.Optional;
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     @EntityGraph(attributePaths = "ingredients")
-    List<Recipe> findAllByOrderByTitleAsc();
+    List<Recipe> findByGroupOrderByTitleAsc(UserGroup group);
 
     @EntityGraph(attributePaths = "ingredients")
-    Optional<Recipe> findWithIngredientsById(Long id);
+    Optional<Recipe> findByIdAndGroup(Long id, UserGroup group);
 }

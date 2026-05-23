@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../groups/groups_page.dart';
 import '../meals/meals_page.dart';
 import '../recipes/recipes_page.dart';
 import '../shopping/shopping_page.dart';
@@ -20,6 +21,7 @@ class _HomeShellState extends State<HomeShell> {
     MealsPage(),
     ShoppingPage(),
     RecipesPage(),
+    GroupsPage(),
     ProfilePage(),
   ];
 
@@ -54,6 +56,11 @@ class _HomeShellState extends State<HomeShell> {
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),
             label: 'Przepisy',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.groups_outlined),
+            selectedIcon: Icon(Icons.groups),
+            label: 'Grupy',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

@@ -56,6 +56,20 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<String> patchJson(
+    String path, {
+    Map<String, dynamic>? body,
+    bool authenticated = false,
+  }) async {
+    final response = await _client.patch(
+      _buildUri(path),
+      headers: await _headers(json: body != null, authenticated: authenticated),
+      body: body == null ? null : jsonEncode(body),
+    );
+
+    return _handleResponse(response);
+  }
+
   Future<String> deleteJson(String path, {bool authenticated = false}) async {
     final response = await _client.delete(
       _buildUri(path),

@@ -1,6 +1,7 @@
 package wsp.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +17,7 @@ import wsp.service.RecipeService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/recipes")
+@RequestMapping("/api/groups/{groupId}/recipes")
 public class RecipeController {
 
     private final RecipeService recipeService;
@@ -26,27 +27,32 @@ public class RecipeController {
     }
 
     @GetMapping
-    public List<RecipeResponse> getAll() {
-        return recipeService.getAll();
+    public List<RecipeResponse> getAll(Authentication authentication, @PathVariable Long groupId) {
+        return recipeService.getAll(authentication.getName(), groupId);
     }
 
-    @GetMapping("/{id}")
-    public RecipeResponse getById(@PathVariable Long id) {
-        return recipeService.getById(id);
+    @GetMapping("/{recipeId}")
+    public RecipeResponse getById(Authentication authentication, @PathVariable Long groupId, @PathVariable Long recipeId) {
+        return recipeService.getById(authentication.getName(), groupId, recipeId);
     }
 
     @PostMapping
-    public RecipeResponse create(@Valid @RequestBody CreateRecipeRequest request) {
-        return recipeService.create(request);
+    public RecipeResponse create(Authentication authentication,
+                                 @PathVariable Long groupId,
+                                 @Valid @RequestBody CreateRecipeRequest request) {
+        return recipeService.create(authentication.getName(), groupId, request);
     }
 
-    @PutMapping("/{id}")
-    public RecipeResponse update(@PathVariable Long id, @Valid @RequestBody CreateRecipeRequest request) {
-        return recipeService.update(id, request);
+    @PutMapping("/{recipeId}")
+    public RecipeResponse update(Authentication authentication,
+                                 @PathVariable Long groupId,
+                                 @PathVariable Long recipeId,
+                                 @Valid @RequestBody CreateRecipeRequest request) {
+        return recipeService.update(authentication.getName(), groupId, recipeId, request);
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        recipeService.delete(id);
+    @DeleteMapping("/{recipeId}")
+    public void delete(Authentication authentication, @PathVariable Long groupId, @PathVariable Long recipeId) {
+        recipeService.delete(authentication.getName(), groupId, recipeId);
     }
 }

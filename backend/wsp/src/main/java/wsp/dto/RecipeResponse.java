@@ -6,6 +6,7 @@ import java.util.List;
 
 public record RecipeResponse(
         Long id,
+        Long groupId,
         String title,
         String description,
         String instructions,
@@ -15,6 +16,7 @@ public record RecipeResponse(
     public static RecipeResponse fromEntity(Recipe recipe) {
         return new RecipeResponse(
                 recipe.getId(),
+                recipe.getGroup().getId(),
                 recipe.getTitle(),
                 recipe.getDescription(),
                 recipe.getInstructions(),
