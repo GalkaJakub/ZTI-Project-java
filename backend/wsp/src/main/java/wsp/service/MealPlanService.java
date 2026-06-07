@@ -4,9 +4,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import wsp.aop.Auditable;
 import wsp.dto.CreatePlannedMealRequest;
 import wsp.dto.MealPlanResponse;
 import wsp.dto.PlannedMealResponse;
+import wsp.entity.AuditAction;
 import wsp.entity.AppUser;
 import wsp.entity.GroupMember;
 import wsp.entity.MealPlan;
@@ -56,6 +58,7 @@ public class MealPlanService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.CREATE, entityType = "PlannedMeal")
     public PlannedMealResponse createMeal(String email, Long groupId, LocalDate dateInWeek, CreatePlannedMealRequest request) {
         UserGroup group = getAccessibleGroup(email, groupId);
         LocalDate weekStartDate = startOfWeek(dateInWeek);
@@ -66,11 +69,12 @@ public class MealPlanService {
         updateMeal(meal, group, request);
         mealPlan.addMeal(meal);
 
-        mealPlanRepository.save(mealPlan);
-        return PlannedMealResponse.fromEntity(meal);
+        PlannedMeal savedMeal = plannedMealRepository.saveAndFlush(meal);
+        return PlannedMealResponse.fromEntity(savedMeal);
     }
 
     @Transactional
+    @Auditable(action = AuditAction.UPDATE, entityType = "PlannedMeal", entityIdArg = "mealId")
     public PlannedMealResponse updateMeal(String email, Long groupId, LocalDate dateInWeek, Long mealId, CreatePlannedMealRequest request) {
         UserGroup group = getAccessibleGroup(email, groupId);
         LocalDate weekStartDate = startOfWeek(dateInWeek);
@@ -84,10 +88,13 @@ public class MealPlanService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.DELETE, entityType = "PlannedMeal", entityIdArg = "mealId")
     public void deleteMeal(String email, Long groupId, LocalDate dateInWeek, Long mealId) {
         UserGroup group = getAccessibleGroup(email, groupId);
         MealPlan mealPlan = findMealPlan(group, startOfWeek(dateInWeek));
-        plannedMealRepository.delete(findMeal(mealPlan, mealId));
+        PlannedMeal meal = findMeal(mealPlan, mealId);
+        mealPlan.removeMeal(meal);
+        mealPlanRepository.saveAndFlush(mealPlan);
     }
 
     private MealPlan getOrCreateMealPlan(UserGroup group, LocalDate weekStartDate) {

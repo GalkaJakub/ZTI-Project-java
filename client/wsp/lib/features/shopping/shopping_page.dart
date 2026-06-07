@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:wsp/core/widgets/app_snack_bar.dart';
+import 'package:wsp/core/widgets/async_page_view.dart';
 import 'package:wsp/core/widgets/empty_state_card.dart';
-import 'package:wsp/core/widgets/page_error_view.dart';
 import 'package:wsp/features/groups/models/user_group.dart';
-import 'package:wsp/features/groups/services/active_group_storage.dart';
-import 'package:wsp/features/groups/services/group_service.dart';
+import 'package:wsp/features/groups/services/active_group_resolver.dart';
 import 'package:wsp/features/shopping/models/new_shopping_item.dart';
 import 'package:wsp/features/shopping/models/shopping_item.dart';
 import 'package:wsp/features/shopping/services/shopping_service.dart';
@@ -19,9 +19,8 @@ class ShoppingPage extends StatefulWidget {
 }
 
 class _ShoppingPageState extends State<ShoppingPage> {
-  final _groupService = GroupService();
+  final _activeGroupResolver = ActiveGroupResolver();
   final _shoppingService = ShoppingService();
-  final _activeGroupStorage = ActiveGroupStorage();
 
   late Future<_ShoppingPageData> _pageFuture;
   int? _selectedGroupId;
@@ -43,10 +42,13 @@ class _ShoppingPageState extends State<ShoppingPage> {
   }
 
   Future<_ShoppingPageData> _loadPage() async {
-    final groups = await _groupService.getGroups();
-    final savedGroupId = await _activeGroupStorage.readActiveGroupId();
+    final groupState = await _activeGroupResolver.resolve(
+      preferredGroupId: _selectedGroupId,
+    );
+    final selectedGroup = groupState.selectedGroup;
+    _selectedGroupId = selectedGroup?.id;
 
-    if (groups.isEmpty) {
+    if (selectedGroup == null) {
       _selectedGroupId = null;
       return const _ShoppingPageData(
         groups: [],
@@ -55,33 +57,12 @@ class _ShoppingPageState extends State<ShoppingPage> {
       );
     }
 
-    final selectedGroup = _selectExistingGroup(
-      groups: groups,
-      preferredId: _selectedGroupId ?? savedGroupId,
-    );
-
-    _selectedGroupId = selectedGroup.id;
-    await _activeGroupStorage.saveActiveGroupId(selectedGroup.id);
-
     final items = await _shoppingService.getItems(selectedGroup.id);
     return _ShoppingPageData(
-      groups: groups,
+      groups: groupState.groups,
       selectedGroup: selectedGroup,
       items: items,
     );
-  }
-
-  UserGroup _selectExistingGroup({
-    required List<UserGroup> groups,
-    required int? preferredId,
-  }) {
-    for (final group in groups) {
-      if (group.id == preferredId) {
-        return group;
-      }
-    }
-
-    return groups.first;
   }
 
   Future<void> _changeGroup(int groupId) async {
@@ -89,7 +70,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
       _selectedGroupId = groupId;
       _pageFuture = _loadPage();
     });
-    await _activeGroupStorage.saveActiveGroupId(groupId);
+    await _activeGroupResolver.saveGroupId(groupId);
   }
 
   Future<void> _addItem() async {
@@ -111,10 +92,11 @@ class _ShoppingPageState extends State<ShoppingPage> {
       );
       if (!mounted) return;
       await _refresh();
-      _showMessage('Dodano produkt.');
+      if (!mounted) return;
+      context.showAppSnackBar('Dodano produkt.');
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się dodać produktu: $e');
+      context.showAppSnackBar('Nie udało się dodać produktu: $e');
     }
   }
 
@@ -125,7 +107,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
       await _refresh();
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się zmienić statusu: $e');
+      context.showAppSnackBar('Nie udało się zmienić statusu: $e');
     }
   }
 
@@ -134,10 +116,11 @@ class _ShoppingPageState extends State<ShoppingPage> {
       await _shoppingService.deleteItem(groupId: item.groupId, itemId: item.id);
       if (!mounted) return;
       await _refresh();
-      _showMessage('Usunięto produkt.');
+      if (!mounted) return;
+      context.showAppSnackBar('Usunięto produkt.');
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się usunąć produktu: $e');
+      context.showAppSnackBar('Nie udało się usunąć produktu: $e');
     }
   }
 
@@ -146,12 +129,6 @@ class _ShoppingPageState extends State<ShoppingPage> {
       context: context,
       builder: (_) => const AddShoppingItemDialog(),
     );
-  }
-
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -163,56 +140,37 @@ class _ShoppingPageState extends State<ShoppingPage> {
         icon: const Icon(Icons.add),
         label: const Text('Produkt'),
       ),
-      body: SafeArea(
-        child: FutureBuilder<_ShoppingPageData>(
-          future: _pageFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError) {
-              return PageErrorView(
-                message: snapshot.error.toString(),
-                onRetry: _refresh,
-              );
-            }
-
-            final data = snapshot.requireData;
-
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  ShoppingHeader(
-                    groups: data.groups,
-                    selectedGroup: data.selectedGroup,
-                    onGroupChanged: _changeGroup,
-                  ),
-                  const SizedBox(height: 18),
-                  if (data.groups.isEmpty)
-                    const EmptyStateCard(
-                      icon: Icons.groups_outlined,
-                      message: 'Najpierw utwórz albo wybierz grupę.',
-                    )
-                  else if (data.items.isEmpty)
-                    const EmptyStateCard(
-                      icon: Icons.playlist_add_check,
-                      message: 'Lista tej grupy jest pusta.',
-                    )
-                  else
-                    for (final item in data.items)
-                      ShoppingItemTile(
-                        item: item,
-                        onToggle: () => _toggleItem(item),
-                        onDelete: () => _deleteItem(item),
-                      ),
-                  const SizedBox(height: 88),
-                ],
-              ),
-            );
-          },
+      body: AsyncPageView<_ShoppingPageData>(
+        future: _pageFuture,
+        onRefresh: _refresh,
+        builder: (context, data) => ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            ShoppingHeader(
+              groups: data.groups,
+              selectedGroup: data.selectedGroup,
+              onGroupChanged: _changeGroup,
+            ),
+            const SizedBox(height: 18),
+            if (data.groups.isEmpty)
+              const EmptyStateCard(
+                icon: Icons.groups_outlined,
+                message: 'Najpierw utwórz albo wybierz grupę.',
+              )
+            else if (data.items.isEmpty)
+              const EmptyStateCard(
+                icon: Icons.playlist_add_check,
+                message: 'Lista tej grupy jest pusta.',
+              )
+            else
+              for (final item in data.items)
+                ShoppingItemTile(
+                  item: item,
+                  onToggle: () => _toggleItem(item),
+                  onDelete: () => _deleteItem(item),
+                ),
+            const SizedBox(height: 88),
+          ],
         ),
       ),
     );

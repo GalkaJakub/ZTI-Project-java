@@ -8,7 +8,6 @@ class ApiClient {
     http.Client? client,
     AuthTokenStorage? tokenStorage,
     this.baseUrl = 'http://localhost:8080',
-
   }) : _client = client ?? http.Client(),
        _tokenStorage = tokenStorage ?? AuthTokenStorage();
 
@@ -29,6 +28,34 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<Map<String, dynamic>> getJsonObject(
+    String path, {
+    Map<String, String>? queryParameters,
+    bool authenticated = false,
+  }) async {
+    return _decodeObject(
+      await getJson(
+        path,
+        queryParameters: queryParameters,
+        authenticated: authenticated,
+      ),
+    );
+  }
+
+  Future<List<dynamic>> getJsonList(
+    String path, {
+    Map<String, String>? queryParameters,
+    bool authenticated = false,
+  }) async {
+    return _decodeList(
+      await getJson(
+        path,
+        queryParameters: queryParameters,
+        authenticated: authenticated,
+      ),
+    );
+  }
+
   Future<String> postJson(
     String path, {
     required Map<String, dynamic> body,
@@ -41,6 +68,16 @@ class ApiClient {
     );
 
     return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> postJsonObject(
+    String path, {
+    required Map<String, dynamic> body,
+    bool authenticated = false,
+  }) async {
+    return _decodeObject(
+      await postJson(path, body: body, authenticated: authenticated),
+    );
   }
 
   Future<String> putJson(
@@ -57,6 +94,16 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<Map<String, dynamic>> putJsonObject(
+    String path, {
+    required Map<String, dynamic> body,
+    bool authenticated = false,
+  }) async {
+    return _decodeObject(
+      await putJson(path, body: body, authenticated: authenticated),
+    );
+  }
+
   Future<String> patchJson(
     String path, {
     Map<String, dynamic>? body,
@@ -69,6 +116,16 @@ class ApiClient {
     );
 
     return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> patchJsonObject(
+    String path, {
+    Map<String, dynamic>? body,
+    bool authenticated = false,
+  }) async {
+    return _decodeObject(
+      await patchJson(path, body: body, authenticated: authenticated),
+    );
   }
 
   Future<String> deleteJson(String path, {bool authenticated = false}) async {
@@ -147,6 +204,38 @@ class ApiClient {
     }
 
     return body;
+  }
+
+  Map<String, dynamic> _decodeObject(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+    } on FormatException {
+      // Fall through to the normalized API error below.
+    }
+
+    throw const ApiException(
+      statusCode: 0,
+      message: 'Serwer zwrócił niepoprawną odpowiedź.',
+    );
+  }
+
+  List<dynamic> _decodeList(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is List<dynamic>) {
+        return decoded;
+      }
+    } on FormatException {
+      // Fall through to the normalized API error below.
+    }
+
+    throw const ApiException(
+      statusCode: 0,
+      message: 'Serwer zwrócił niepoprawną odpowiedź.',
+    );
   }
 
   Uri _buildUri(String path, {Map<String, String>? queryParameters}) {

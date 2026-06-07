@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:wsp/core/network/api_client.dart';
 import 'package:wsp/features/shopping/models/shopping_item.dart';
 
@@ -10,13 +8,12 @@ class ShoppingService {
   final ApiClient _apiClient;
 
   Future<List<ShoppingItem>> getItems(int groupId) async {
-    final response = await _apiClient.getJson(
+    final response = await _apiClient.getJsonList(
       '/api/groups/$groupId/shopping-items',
       authenticated: true,
     );
 
-    final decoded = jsonDecode(response) as List<dynamic>;
-    return decoded
+    return response
         .map((item) => ShoppingItem.fromJson(item as Map<String, dynamic>))
         .toList();
   }
@@ -26,25 +23,25 @@ class ShoppingService {
     required String name,
     required String quantity,
   }) async {
-    final response = await _apiClient.postJson(
+    final response = await _apiClient.postJsonObject(
       '/api/groups/$groupId/shopping-items',
       authenticated: true,
       body: {'name': name.trim(), 'quantity': quantity.trim()},
     );
 
-    return ShoppingItem.fromJson(jsonDecode(response) as Map<String, dynamic>);
+    return ShoppingItem.fromJson(response);
   }
 
   Future<ShoppingItem> toggleItem({
     required int groupId,
     required int itemId,
   }) async {
-    final response = await _apiClient.patchJson(
+    final response = await _apiClient.patchJsonObject(
       '/api/groups/$groupId/shopping-items/$itemId/toggle',
       authenticated: true,
     );
 
-    return ShoppingItem.fromJson(jsonDecode(response) as Map<String, dynamic>);
+    return ShoppingItem.fromJson(response);
   }
 
   Future<void> deleteItem({required int groupId, required int itemId}) {

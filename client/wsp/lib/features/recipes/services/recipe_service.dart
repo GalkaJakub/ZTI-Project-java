@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:wsp/core/network/api_client.dart';
 import 'package:wsp/features/recipes/models/recipe.dart';
 import 'package:wsp/features/recipes/models/recipe_ingredient.dart';
@@ -10,13 +8,12 @@ class RecipeService {
   final ApiClient _apiClient;
 
   Future<List<Recipe>> getRecipes(int groupId) async {
-    final response = await _apiClient.getJson(
+    final response = await _apiClient.getJsonList(
       '/api/groups/$groupId/recipes',
       authenticated: true,
     );
 
-    final decoded = jsonDecode(response) as List<dynamic>;
-    return decoded
+    return response
         .map((item) => Recipe.fromJson(item as Map<String, dynamic>))
         .toList();
   }
@@ -28,7 +25,7 @@ class RecipeService {
     required String instructions,
     required List<RecipeIngredient> ingredients,
   }) async {
-    final response = await _apiClient.postJson(
+    final response = await _apiClient.postJsonObject(
       '/api/groups/$groupId/recipes',
       authenticated: true,
       body: _body(
@@ -39,7 +36,7 @@ class RecipeService {
       ),
     );
 
-    return Recipe.fromJson(jsonDecode(response) as Map<String, dynamic>);
+    return Recipe.fromJson(response);
   }
 
   Future<Recipe> updateRecipe({
@@ -50,7 +47,7 @@ class RecipeService {
     required String instructions,
     required List<RecipeIngredient> ingredients,
   }) async {
-    final response = await _apiClient.putJson(
+    final response = await _apiClient.putJsonObject(
       '/api/groups/$groupId/recipes/$recipeId',
       authenticated: true,
       body: _body(
@@ -61,7 +58,7 @@ class RecipeService {
       ),
     );
 
-    return Recipe.fromJson(jsonDecode(response) as Map<String, dynamic>);
+    return Recipe.fromJson(response);
   }
 
   Future<void> deleteRecipe({required int groupId, required int recipeId}) {

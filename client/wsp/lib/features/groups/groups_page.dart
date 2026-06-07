@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:wsp/core/widgets/app_snack_bar.dart';
 import 'package:wsp/features/groups/models/user_group.dart';
-import 'package:wsp/features/groups/services/active_group_storage.dart';
+import 'package:wsp/features/groups/services/active_group_resolver.dart';
 import 'package:wsp/features/groups/services/group_service.dart';
 import 'package:wsp/features/groups/widgets/empty_groups_card.dart';
 import 'package:wsp/features/groups/widgets/group_actions.dart';
@@ -19,7 +20,7 @@ class GroupsPage extends StatefulWidget {
 
 class _GroupsPageState extends State<GroupsPage> {
   final _groupService = GroupService();
-  final _activeGroupStorage = ActiveGroupStorage();
+  final _activeGroupResolver = ActiveGroupResolver();
 
   late Future<List<UserGroup>> _groupsFuture;
   int? _selectedGroupId;
@@ -41,24 +42,11 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   Future<List<UserGroup>> _loadGroups() async {
-    final groups = await _groupService.getGroups();
-    final savedGroupId = await _activeGroupStorage.readActiveGroupId();
-
-    if (groups.isEmpty) {
-      _selectedGroupId = null;
-      await _activeGroupStorage.clear();
-      return groups;
-    }
-
-    final groupId = _firstExistingGroupId(
-      groups: groups,
-      preferredId: _selectedGroupId ?? savedGroupId,
+    final groupState = await _activeGroupResolver.resolve(
+      preferredGroupId: _selectedGroupId,
     );
-
-    _selectedGroupId = groupId;
-    await _activeGroupStorage.saveActiveGroupId(groupId);
-
-    return groups;
+    _selectedGroupId = groupState.selectedGroup?.id;
+    return groupState.groups;
   }
 
   Future<void> _createGroup() async {
@@ -81,12 +69,13 @@ class _GroupsPageState extends State<GroupsPage> {
       setState(() {
         _selectedGroupId = group.id;
       });
-      await _activeGroupStorage.saveActiveGroupId(group.id);
+      await _activeGroupResolver.saveGroupId(group.id);
       await _refreshGroups();
-      _showMessage('Grupa została utworzona.');
+      if (!mounted) return;
+      context.showAppSnackBar('Grupa została utworzona.');
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się utworzyć grupy: $e');
+      context.showAppSnackBar('Nie udało się utworzyć grupy: $e');
     }
   }
 
@@ -111,12 +100,13 @@ class _GroupsPageState extends State<GroupsPage> {
       setState(() {
         _selectedGroupId = group.id;
       });
-      await _activeGroupStorage.saveActiveGroupId(group.id);
+      await _activeGroupResolver.saveGroupId(group.id);
       await _refreshGroups();
-      _showMessage('Dołączono do grupy.');
+      if (!mounted) return;
+      context.showAppSnackBar('Dołączono do grupy.');
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się dołączyć: $e');
+      context.showAppSnackBar('Nie udało się dołączyć: $e');
     }
   }
 
@@ -157,12 +147,12 @@ class _GroupsPageState extends State<GroupsPage> {
           _selectedGroupId = null;
         }
       });
-      await _activeGroupStorage.clear();
       await _refreshGroups();
-      _showMessage('Opuszczono grupę.');
+      if (!mounted) return;
+      context.showAppSnackBar('Opuszczono grupę.');
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się opuścić grupy: $e');
+      context.showAppSnackBar('Nie udało się opuścić grupy: $e');
     }
   }
 
@@ -214,7 +204,7 @@ class _GroupsPageState extends State<GroupsPage> {
     setState(() {
       _selectedGroupId = group.id;
     });
-    await _activeGroupStorage.saveActiveGroupId(group.id);
+    await _activeGroupResolver.saveGroupId(group.id);
   }
 
   UserGroup? _selectedGroup(List<UserGroup> groups) {
@@ -234,25 +224,6 @@ class _GroupsPageState extends State<GroupsPage> {
     }
 
     return groups.first;
-  }
-
-  int _firstExistingGroupId({
-    required List<UserGroup> groups,
-    required int? preferredId,
-  }) {
-    for (final group in groups) {
-      if (group.id == preferredId) {
-        return group.id;
-      }
-    }
-
-    return groups.first.id;
-  }
-
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override

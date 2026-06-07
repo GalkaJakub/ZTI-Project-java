@@ -22,6 +22,7 @@ public class UserService {
         return UserResponse.fromEntity(findByEmail(email));
     }
 
+    @Transactional
     public UserResponse updateCurrentUser(String email, UpdateUserRequest request) {
         AppUser user = findByEmail(email);
         user.setDisplayName(request.displayName().trim());

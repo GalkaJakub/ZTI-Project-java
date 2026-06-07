@@ -9,5 +9,4 @@ class WspApplicationTests {
     @Test
     void contextLoads() {
     }
-
 }

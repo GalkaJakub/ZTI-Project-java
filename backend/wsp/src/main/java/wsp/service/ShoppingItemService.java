@@ -4,8 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import wsp.aop.Auditable;
 import wsp.dto.CreateShoppingItemRequest;
 import wsp.dto.ShoppingItemResponse;
+import wsp.entity.AuditAction;
 import wsp.entity.AppUser;
 import wsp.entity.GroupMember;
 import wsp.entity.ShoppingItem;
@@ -44,6 +46,7 @@ public class ShoppingItemService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.CREATE, entityType = "ShoppingItem")
     public ShoppingItemResponse create(String email, Long groupId, CreateShoppingItemRequest request) {
         UserGroup group = getAccessibleGroup(email, groupId);
 
@@ -57,6 +60,7 @@ public class ShoppingItemService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.MARK_AS_PURCHASED, entityType = "ShoppingItem", entityIdArg = "itemId")
     public ShoppingItemResponse toggleBought(String email, Long groupId, Long itemId) {
         UserGroup group = getAccessibleGroup(email, groupId);
         ShoppingItem item = findItem(group, itemId);
@@ -65,6 +69,7 @@ public class ShoppingItemService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.DELETE, entityType = "ShoppingItem", entityIdArg = "itemId")
     public void delete(String email, Long groupId, Long itemId) {
         UserGroup group = getAccessibleGroup(email, groupId);
         shoppingItemRepository.delete(findItem(group, itemId));

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:wsp/core/widgets/app_snack_bar.dart';
 import 'package:wsp/features/groups/models/group_member.dart';
 import 'package:wsp/features/groups/models/user_group.dart';
 import 'package:wsp/features/groups/services/group_service.dart';
@@ -45,9 +46,7 @@ class _GroupDetailsCardState extends State<GroupDetailsCard> {
     await Clipboard.setData(ClipboardData(text: widget.group.inviteCode));
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Kod zaproszenia skopiowany.')),
-    );
+    context.showAppSnackBar('Kod zaproszenia skopiowany.');
   }
 
   @override

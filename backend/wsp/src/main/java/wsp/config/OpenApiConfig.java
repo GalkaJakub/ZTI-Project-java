@@ -14,14 +14,9 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
-                .info(new Info().title("WSP API").version("1.0.0")
-                        .description("API aplikacji do wspolnego planowania posilkow, przepisow i listy zakupow."))
+                .info(new Info().title("WSP API").version("1.0.0").description("API aplikacji do wspolnego planowania posilkow, przepisow i listy zakupow."))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components().addSecuritySchemes("bearerAuth",
-                        new SecurityScheme()
-                                .name("bearerAuth")
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")));
+                        new SecurityScheme().name("bearerAuth").type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }
 }

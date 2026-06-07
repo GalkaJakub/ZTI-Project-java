@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:wsp/core/auth/auth_token_storage.dart';
 import 'package:wsp/core/network/api_client.dart';
 import 'package:wsp/features/auth/models/auth_response.dart';
@@ -17,7 +15,7 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final response = await _apiClient.postJson(
+      final response = await _apiClient.postJsonObject(
         '/api/auth/login',
         body: {'email': email.trim(), 'password': password},
       );
@@ -38,7 +36,7 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final response = await _apiClient.postJson(
+      final response = await _apiClient.postJsonObject(
         '/api/auth/register',
         body: {
           'email': email.trim(),
@@ -57,16 +55,12 @@ class AuthService {
     return _tokenStorage.clear();
   }
 
-  Future<AuthResponse> _saveSession(String responseBody) async {
+  Future<AuthResponse> _saveSession(Map<String, dynamic> responseBody) async {
     try {
-      final response = AuthResponse.fromJson(
-        jsonDecode(responseBody) as Map<String, dynamic>,
-      );
+      final response = AuthResponse.fromJson(responseBody);
 
       await _tokenStorage.saveAccessToken(response.accessToken);
       return response;
-    } on FormatException {
-      throw const AuthException('Serwer zwrócił niepoprawną odpowiedź.');
     } on TypeError {
       throw const AuthException('Serwer zwrócił niepoprawną odpowiedź.');
     }

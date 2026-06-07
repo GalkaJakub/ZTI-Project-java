@@ -18,6 +18,9 @@ import wsp.service.MealPlanService;
 
 import java.time.LocalDate;
 
+/**
+ * REST controller for weekly group meal plans.
+ */
 @RestController
 @RequestMapping("/api/groups/{groupId}/meal-plans/{dateInWeek}")
 public class MealPlanController {
@@ -28,6 +31,14 @@ public class MealPlanController {
         this.mealPlanService = mealPlanService;
     }
 
+    /**
+     * Returns a weekly meal plan for the week containing the provided date.
+     *
+     * @param authentication Spring Security authentication containing user email
+     * @param groupId group identifier
+     * @param dateInWeek any date inside the requested week
+     * @return weekly meal plan
+     */
     @GetMapping
     public MealPlanResponse getWeekPlan(Authentication authentication,
                                         @PathVariable Long groupId,
@@ -35,6 +46,15 @@ public class MealPlanController {
         return mealPlanService.getWeekPlan(authentication.getName(), groupId, dateInWeek);
     }
 
+    /**
+     * Adds a meal to the selected weekly plan.
+     *
+     * @param authentication Spring Security authentication containing user email
+     * @param groupId group identifier
+     * @param dateInWeek any date inside the requested week
+     * @param request meal data
+     * @return created planned meal
+     */
     @PostMapping("/meals")
     public PlannedMealResponse createMeal(Authentication authentication,
                                           @PathVariable Long groupId,
@@ -43,6 +63,16 @@ public class MealPlanController {
         return mealPlanService.createMeal(authentication.getName(), groupId, dateInWeek, request);
     }
 
+    /**
+     * Updates an existing meal inside the selected weekly plan.
+     *
+     * @param authentication Spring Security authentication containing user email
+     * @param groupId group identifier
+     * @param dateInWeek any date inside the requested week
+     * @param mealId planned meal identifier
+     * @param request updated meal data
+     * @return updated planned meal
+     */
     @PutMapping("/meals/{mealId}")
     public PlannedMealResponse updateMeal(Authentication authentication,
                                           @PathVariable Long groupId,
@@ -52,6 +82,14 @@ public class MealPlanController {
         return mealPlanService.updateMeal(authentication.getName(), groupId, dateInWeek, mealId, request);
     }
 
+    /**
+     * Deletes a meal from the selected weekly plan.
+     *
+     * @param authentication Spring Security authentication containing user email
+     * @param groupId group identifier
+     * @param dateInWeek any date inside the requested week
+     * @param mealId planned meal identifier
+     */
     @DeleteMapping("/meals/{mealId}")
     public void deleteMeal(Authentication authentication,
                            @PathVariable Long groupId,

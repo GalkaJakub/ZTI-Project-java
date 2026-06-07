@@ -4,9 +4,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import wsp.aop.Auditable;
 import wsp.dto.CreateRecipeIngredientRequest;
 import wsp.dto.CreateRecipeRequest;
 import wsp.dto.RecipeResponse;
+import wsp.entity.AuditAction;
 import wsp.entity.AppUser;
 import wsp.entity.GroupMember;
 import wsp.entity.Recipe;
@@ -53,6 +55,7 @@ public class RecipeService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.CREATE, entityType = "Recipe")
     public RecipeResponse create(String email, Long groupId, CreateRecipeRequest request) {
         UserGroup group = getAccessibleGroup(email, groupId);
 
@@ -63,6 +66,7 @@ public class RecipeService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.UPDATE, entityType = "Recipe", entityIdArg = "recipeId")
     public RecipeResponse update(String email, Long groupId, Long recipeId, CreateRecipeRequest request) {
         UserGroup group = getAccessibleGroup(email, groupId);
         Recipe recipe = findById(group, recipeId);
@@ -71,6 +75,7 @@ public class RecipeService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.DELETE, entityType = "Recipe", entityIdArg = "recipeId")
     public void delete(String email, Long groupId, Long recipeId) {
         UserGroup group = getAccessibleGroup(email, groupId);
         recipeRepository.delete(findById(group, recipeId));

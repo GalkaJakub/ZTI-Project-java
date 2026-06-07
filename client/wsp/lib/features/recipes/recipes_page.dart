@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:wsp/core/widgets/app_snack_bar.dart';
+import 'package:wsp/core/widgets/async_page_view.dart';
 import 'package:wsp/core/widgets/empty_state_card.dart';
-import 'package:wsp/core/widgets/page_error_view.dart';
 import 'package:wsp/features/groups/models/user_group.dart';
-import 'package:wsp/features/groups/services/active_group_storage.dart';
-import 'package:wsp/features/groups/services/group_service.dart';
+import 'package:wsp/features/groups/services/active_group_resolver.dart';
 import 'package:wsp/features/recipes/models/recipe.dart';
 import 'package:wsp/features/recipes/models/recipe_draft.dart';
 import 'package:wsp/features/recipes/services/recipe_service.dart';
@@ -20,9 +20,8 @@ class RecipesPage extends StatefulWidget {
 }
 
 class _RecipesPageState extends State<RecipesPage> {
-  final _groupService = GroupService();
+  final _activeGroupResolver = ActiveGroupResolver();
   final _recipeService = RecipeService();
-  final _activeGroupStorage = ActiveGroupStorage();
 
   late Future<_RecipesPageData> _pageFuture;
   int? _selectedGroupId;
@@ -44,10 +43,13 @@ class _RecipesPageState extends State<RecipesPage> {
   }
 
   Future<_RecipesPageData> _loadPage() async {
-    final groups = await _groupService.getGroups();
-    final savedGroupId = await _activeGroupStorage.readActiveGroupId();
+    final groupState = await _activeGroupResolver.resolve(
+      preferredGroupId: _selectedGroupId,
+    );
+    final selectedGroup = groupState.selectedGroup;
+    _selectedGroupId = selectedGroup?.id;
 
-    if (groups.isEmpty) {
+    if (selectedGroup == null) {
       _selectedGroupId = null;
       return const _RecipesPageData(
         groups: [],
@@ -56,33 +58,12 @@ class _RecipesPageState extends State<RecipesPage> {
       );
     }
 
-    final selectedGroup = _selectExistingGroup(
-      groups: groups,
-      preferredId: _selectedGroupId ?? savedGroupId,
-    );
-
-    _selectedGroupId = selectedGroup.id;
-    await _activeGroupStorage.saveActiveGroupId(selectedGroup.id);
-
     final recipes = await _recipeService.getRecipes(selectedGroup.id);
     return _RecipesPageData(
-      groups: groups,
+      groups: groupState.groups,
       selectedGroup: selectedGroup,
       recipes: recipes,
     );
-  }
-
-  UserGroup _selectExistingGroup({
-    required List<UserGroup> groups,
-    required int? preferredId,
-  }) {
-    for (final group in groups) {
-      if (group.id == preferredId) {
-        return group;
-      }
-    }
-
-    return groups.first;
   }
 
   Future<void> _changeGroup(int groupId) async {
@@ -90,7 +71,7 @@ class _RecipesPageState extends State<RecipesPage> {
       _selectedGroupId = groupId;
       _pageFuture = _loadPage();
     });
-    await _activeGroupStorage.saveActiveGroupId(groupId);
+    await _activeGroupResolver.saveGroupId(groupId);
   }
 
   Future<void> _createRecipe() async {
@@ -114,10 +95,11 @@ class _RecipesPageState extends State<RecipesPage> {
       );
       if (!mounted) return;
       await _refresh();
-      _showMessage('Dodano przepis.');
+      if (!mounted) return;
+      context.showAppSnackBar('Dodano przepis.');
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się dodać przepisu: $e');
+      context.showAppSnackBar('Nie udało się dodać przepisu: $e');
     }
   }
 
@@ -138,10 +120,11 @@ class _RecipesPageState extends State<RecipesPage> {
       );
       if (!mounted) return;
       await _refresh();
-      _showMessage('Zapisano przepis.');
+      if (!mounted) return;
+      context.showAppSnackBar('Zapisano przepis.');
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się zapisać przepisu: $e');
+      context.showAppSnackBar('Nie udało się zapisać przepisu: $e');
     }
   }
 
@@ -177,10 +160,11 @@ class _RecipesPageState extends State<RecipesPage> {
       );
       if (!mounted) return;
       await _refresh();
-      _showMessage('Usunięto przepis.');
+      if (!mounted) return;
+      context.showAppSnackBar('Usunięto przepis.');
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Nie udało się usunąć przepisu: $e');
+      context.showAppSnackBar('Nie udało się usunąć przepisu: $e');
     }
   }
 
@@ -221,12 +205,6 @@ class _RecipesPageState extends State<RecipesPage> {
     );
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -236,56 +214,37 @@ class _RecipesPageState extends State<RecipesPage> {
         icon: const Icon(Icons.add),
         label: const Text('Przepis'),
       ),
-      body: SafeArea(
-        child: FutureBuilder<_RecipesPageData>(
-          future: _pageFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError) {
-              return PageErrorView(
-                message: snapshot.error.toString(),
-                onRetry: _refresh,
-              );
-            }
-
-            final data = snapshot.requireData;
-
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  RecipesHeader(
-                    groups: data.groups,
-                    selectedGroup: data.selectedGroup,
-                    onGroupChanged: _changeGroup,
-                  ),
-                  const SizedBox(height: 18),
-                  if (data.groups.isEmpty)
-                    const EmptyStateCard(
-                      icon: Icons.groups_outlined,
-                      message: 'Najpierw utwórz albo wybierz grupę.',
-                    )
-                  else if (data.recipes.isEmpty)
-                    const EmptyStateCard(
-                      icon: Icons.menu_book_outlined,
-                      message: 'Ta grupa nie ma jeszcze zapisanych przepisów.',
-                    )
-                  else
-                    for (final recipe in data.recipes)
-                      RecipeTile(
-                        recipe: recipe,
-                        onTap: () => _showRecipeDetails(recipe),
-                        onEdit: () => _editRecipe(recipe),
-                      ),
-                  const SizedBox(height: 88),
-                ],
-              ),
-            );
-          },
+      body: AsyncPageView<_RecipesPageData>(
+        future: _pageFuture,
+        onRefresh: _refresh,
+        builder: (context, data) => ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            RecipesHeader(
+              groups: data.groups,
+              selectedGroup: data.selectedGroup,
+              onGroupChanged: _changeGroup,
+            ),
+            const SizedBox(height: 18),
+            if (data.groups.isEmpty)
+              const EmptyStateCard(
+                icon: Icons.groups_outlined,
+                message: 'Najpierw utwórz albo wybierz grupę.',
+              )
+            else if (data.recipes.isEmpty)
+              const EmptyStateCard(
+                icon: Icons.menu_book_outlined,
+                message: 'Ta grupa nie ma jeszcze zapisanych przepisów.',
+              )
+            else
+              for (final recipe in data.recipes)
+                RecipeTile(
+                  recipe: recipe,
+                  onTap: () => _showRecipeDetails(recipe),
+                  onEdit: () => _editRecipe(recipe),
+                ),
+            const SizedBox(height: 88),
+          ],
         ),
       ),
     );

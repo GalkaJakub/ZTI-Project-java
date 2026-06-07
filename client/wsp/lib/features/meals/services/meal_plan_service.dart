@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:wsp/core/network/api_client.dart';
 import 'package:wsp/features/meals/models/meal_plan.dart';
 import 'package:wsp/features/meals/models/meal_type.dart';
@@ -15,12 +13,12 @@ class MealPlanService {
     required int groupId,
     required DateTime dateInWeek,
   }) async {
-    final response = await _apiClient.getJson(
+    final response = await _apiClient.getJsonObject(
       '/api/groups/$groupId/meal-plans/${_date(dateInWeek)}',
       authenticated: true,
     );
 
-    return MealPlan.fromJson(jsonDecode(response) as Map<String, dynamic>);
+    return MealPlan.fromJson(response);
   }
 
   Future<PlannedMeal> createMeal({
@@ -32,7 +30,7 @@ class MealPlanService {
     required String notes,
     int? recipeId,
   }) async {
-    final response = await _apiClient.postJson(
+    final response = await _apiClient.postJsonObject(
       '/api/groups/$groupId/meal-plans/${_date(dateInWeek)}/meals',
       authenticated: true,
       body: _body(
@@ -44,7 +42,7 @@ class MealPlanService {
       ),
     );
 
-    return PlannedMeal.fromJson(jsonDecode(response) as Map<String, dynamic>);
+    return PlannedMeal.fromJson(response);
   }
 
   Future<PlannedMeal> updateMeal({
@@ -57,7 +55,7 @@ class MealPlanService {
     required String notes,
     int? recipeId,
   }) async {
-    final response = await _apiClient.putJson(
+    final response = await _apiClient.putJsonObject(
       '/api/groups/$groupId/meal-plans/${_date(dateInWeek)}/meals/$mealId',
       authenticated: true,
       body: _body(
@@ -69,7 +67,7 @@ class MealPlanService {
       ),
     );
 
-    return PlannedMeal.fromJson(jsonDecode(response) as Map<String, dynamic>);
+    return PlannedMeal.fromJson(response);
   }
 
   Future<void> deleteMeal({

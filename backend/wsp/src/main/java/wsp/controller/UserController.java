@@ -11,6 +11,9 @@ import wsp.dto.UpdateUserRequest;
 import wsp.dto.UserResponse;
 import wsp.service.UserService;
 
+/**
+ * REST controller exposing endpoints for the currently authenticated user.
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -21,11 +24,24 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * Returns profile data of the current user.
+     *
+     * @param authentication Spring Security authentication containing user email
+     * @return current user profile
+     */
     @GetMapping("/me")
     public UserResponse getCurrentUser(Authentication authentication) {
         return userService.getCurrentUser(authentication.getName());
     }
 
+    /**
+     * Updates profile data of the current user.
+     *
+     * @param authentication Spring Security authentication containing user email
+     * @param request profile update data
+     * @return updated user profile
+     */
     @PutMapping("/me")
     public UserResponse updateCurrentUser(Authentication authentication, @Valid @RequestBody UpdateUserRequest request)
     {

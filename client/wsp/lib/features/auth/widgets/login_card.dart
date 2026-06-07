@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wsp/core/widgets/app_snack_bar.dart';
 import 'package:wsp/features/auth/services/auth_service.dart';
 import 'package:wsp/features/auth/widgets/sign_in_button.dart';
 import 'package:wsp/features/home/home_shell.dart';
@@ -65,9 +66,7 @@ class _LoginCardState extends State<LoginCard> {
       if (!mounted) return;
 
       final action = _isRegisterMode ? 'rejestracji' : 'logowania';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Błąd $action: $e')));
+      context.showAppSnackBar('Błąd $action: $e');
     } finally {
       if (mounted) {
         setState(() => _loading = false);

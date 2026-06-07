@@ -45,4 +45,9 @@ public class MealPlan {
         meals.add(meal);
         meal.setMealPlan(this);
     }
+
+    public void removeMeal(PlannedMeal meal) {
+        meals.remove(meal);
+        meal.setMealPlan(null);
+    }
 }
