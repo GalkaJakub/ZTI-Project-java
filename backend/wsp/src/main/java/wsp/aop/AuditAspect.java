@@ -10,16 +10,31 @@ import wsp.repository.AuditLogRepository;
 
 import java.lang.reflect.Method;
 
+/**
+ * Aspekt Spring AOP zapisujący wpisy audytu po poprawnym zakończeniu oznaczonych metod serwisowych.
+ */
 @Aspect
 @Component
 public class AuditAspect {
 
     private final AuditLogRepository auditLogRepository;
 
+    /**
+     * Tworzy aspekt audytu z repozytorium wpisów audytowych.
+     *
+     * @param auditLogRepository repozytorium zapisujące wpisy audytu
+     */
     public AuditAspect(AuditLogRepository auditLogRepository) {
         this.auditLogRepository = auditLogRepository;
     }
 
+    /**
+     * Tworzy i zapisuje wpis audytu na podstawie metadanych z adnotacji oraz argumentów metody.
+     *
+     * @param joinPoint punkt połączenia metody serwisowej
+     * @param auditable konfiguracja audytu z adnotacji
+     * @param result wynik zwrócony przez metodę serwisową
+     */
     @AfterReturning(pointcut = "@annotation(auditable)", returning = "result")
     public void saveAuditLog(JoinPoint joinPoint, Auditable auditable, Object result) {
         AuditLog log = new AuditLog();

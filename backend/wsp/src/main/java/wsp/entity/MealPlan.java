@@ -18,6 +18,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Encja tygodniowego planu posiłków przypisanego do grupy.
+ */
 @Entity
 @Table(
         name = "meal_plans",
@@ -41,11 +44,21 @@ public class MealPlan {
     @OneToMany(mappedBy = "mealPlan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlannedMeal> meals = new ArrayList<>();
 
+    /**
+     * Dodaje posiłek do planu i ustawia relację zwrotną.
+     *
+     * @param meal posiłek dodawany do planu
+     */
     public void addMeal(PlannedMeal meal) {
         meals.add(meal);
         meal.setMealPlan(this);
     }
 
+    /**
+     * Usuwa posiłek z planu i czyści relację zwrotną.
+     *
+     * @param meal posiłek usuwany z planu
+     */
     public void removeMeal(PlannedMeal meal) {
         meals.remove(meal);
         meal.setMealPlan(null);

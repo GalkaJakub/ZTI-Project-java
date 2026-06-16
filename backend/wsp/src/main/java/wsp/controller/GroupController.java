@@ -18,7 +18,7 @@ import wsp.service.GroupService;
 import java.util.List;
 
 /**
- * REST controller exposing operations for user groups and their memberships.
+ * Kontroler REST udostępniający operacje na grupach użytkowników i członkostwach.
  */
 @RestController
 @RequestMapping("/api/groups")
@@ -26,15 +26,20 @@ public class GroupController {
 
     private final GroupService groupService;
 
+    /**
+     * Tworzy kontroler grup z serwisem logiki biznesowej grup.
+     *
+     * @param groupService serwis obsługujący grupy i członkostwa
+     */
     public GroupController(GroupService groupService) {
         this.groupService = groupService;
     }
 
     /**
-     * Returns groups available to the currently authenticated user.
+     * Zwraca grupy dostępne dla aktualnie uwierzytelnionego użytkownika.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @return list of group summaries
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @return lista podsumowań grup
      */
     @GetMapping
     public List<GroupResponse> getCurrentUserGroups(Authentication authentication) {
@@ -42,11 +47,11 @@ public class GroupController {
     }
 
     /**
-     * Creates a new group and assigns the current user as its owner.
+     * Tworzy nową grupę i przypisuje aktualnego użytkownika jako właściciela.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param request group creation data
-     * @return created group summary
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param request dane tworzonej grupy
+     * @return podsumowanie utworzonej grupy
      */
     @PostMapping
     public GroupResponse createGroup(Authentication authentication, @Valid @RequestBody CreateGroupRequest request) {
@@ -54,11 +59,11 @@ public class GroupController {
     }
 
     /**
-     * Adds the current user to a group identified by an invite code.
+     * Dodaje aktualnego użytkownika do grupy wskazanej kodem zaproszenia.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param request invite code request
-     * @return joined group summary
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param request żądanie zawierające kod zaproszenia
+     * @return podsumowanie grupy, do której dołączono
      */
     @PostMapping("/join")
     public GroupResponse joinGroup(Authentication authentication, @Valid @RequestBody JoinGroupRequest request) {
@@ -66,11 +71,11 @@ public class GroupController {
     }
 
     /**
-     * Returns members of a group if the current user belongs to it.
+     * Zwraca członków grupy, jeśli aktualny użytkownik do niej należy.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @return list of group members
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @return lista członków grupy
      */
     @GetMapping("/{groupId}/members")
     public List<GroupMemberResponse> getMembers(Authentication authentication, @PathVariable Long groupId) {
@@ -78,10 +83,10 @@ public class GroupController {
     }
 
     /**
-     * Removes the current user from a group when business rules allow it.
+     * Usuwa aktualnego użytkownika z grupy, jeśli pozwalają na to reguły biznesowe.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
      */
     @DeleteMapping("/{groupId}/members/me")
     public void leaveGroup(Authentication authentication, @PathVariable Long groupId) {

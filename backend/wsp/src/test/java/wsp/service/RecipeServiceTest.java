@@ -5,9 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import wsp.ServiceIntegrationTestSupport;
+import wsp.dto.CreatePlannedMealRequest;
 import wsp.dto.CreateRecipeIngredientRequest;
 import wsp.dto.CreateRecipeRequest;
+import wsp.entity.MealType;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +20,9 @@ class RecipeServiceTest extends ServiceIntegrationTestSupport {
 
     @Autowired
     private RecipeService recipeService;
+
+    @Autowired
+    private MealPlanService mealPlanService;
 
     @Test
     void createsRecipeWithIngredientsAndReplacesThemOnUpdate() {
@@ -74,5 +80,33 @@ class RecipeServiceTest extends ServiceIntegrationTestSupport {
         assertThatThrownBy(() -> recipeService.getById(membership.user().getEmail(), membership.group().getId(), recipe.id()))
                 .isInstanceOfSatisfying(ResponseStatusException.class, exception ->
                         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    void deletesRecipeUsedByPlannedMealAndKeepsMealInPlan() {
+        TestMembership membership = createMembership("recipe");
+        LocalDate monday = LocalDate.of(2026, 6, 15);
+        var recipe = recipeService.create(
+                membership.user().getEmail(),
+                membership.group().getId(),
+                new CreateRecipeRequest("Makaron", null, "Gotuj.", List.of())
+        );
+        var meal = mealPlanService.createMeal(
+                membership.user().getEmail(),
+                membership.group().getId(),
+                monday,
+                new CreatePlannedMealRequest(monday, MealType.DINNER, "Obiad", null, recipe.id())
+        );
+
+        recipeService.delete(membership.user().getEmail(), membership.group().getId(), recipe.id());
+
+        assertThat(recipeRepository.existsById(recipe.id())).isFalse();
+
+        var weekPlan = mealPlanService.getWeekPlan(membership.user().getEmail(), membership.group().getId(), monday);
+        assertThat(weekPlan.meals()).singleElement().satisfies(plannedMeal -> {
+            assertThat(plannedMeal.id()).isEqualTo(meal.id());
+            assertThat(plannedMeal.recipeId()).isNull();
+            assertThat(plannedMeal.recipeTitle()).isNull();
+        });
     }
 }

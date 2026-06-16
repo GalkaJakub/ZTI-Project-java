@@ -16,6 +16,9 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * Encja pojedynczego posiłku zaplanowanego w tygodniowym planie.
+ */
 @Entity
 @Table(name = "planned_meals")
 @Getter

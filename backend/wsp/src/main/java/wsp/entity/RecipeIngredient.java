@@ -12,6 +12,9 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Encja składnika należącego do przepisu.
+ */
 @Entity
 @Table(name = "recipe_ingredients")
 @Getter

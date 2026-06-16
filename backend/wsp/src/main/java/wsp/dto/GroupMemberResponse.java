@@ -5,6 +5,16 @@ import wsp.entity.GroupRole;
 
 import java.time.LocalDateTime;
 
+/**
+ * Odpowiedź opisująca członka grupy.
+ *
+ * @param id identyfikator członkostwa w grupie
+ * @param userId identyfikator użytkownika
+ * @param displayName nazwa wyświetlana użytkownika
+ * @param email adres e-mail użytkownika
+ * @param role rola użytkownika w grupie
+ * @param joinedAt data dołączenia do grupy
+ */
 public record GroupMemberResponse(
         Long id,
         Long userId,
@@ -14,6 +24,12 @@ public record GroupMemberResponse(
         LocalDateTime joinedAt
 ) {
 
+    /**
+     * Tworzy DTO członka grupy na podstawie encji JPA.
+     *
+     * @param member encja członkostwa
+     * @return odpowiedź z danymi członka grupy
+     */
     public static GroupMemberResponse fromEntity(GroupMember member) {
         return new GroupMemberResponse(
                 member.getId(),

@@ -17,6 +17,9 @@ import wsp.repository.UserRepository;
 import java.security.SecureRandom;
 import java.util.List;
 
+/**
+ * Serwis zarządzający grupami użytkowników, członkostwem i kodami zaproszeń.
+ */
 @Service
 public class GroupService {
 
@@ -28,6 +31,13 @@ public class GroupService {
     private final UserRepository userRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    /**
+     * Tworzy serwis grup z repozytoriami grup, członkostw i użytkowników.
+     *
+     * @param userGroupRepository repozytorium grup użytkowników
+     * @param groupMemberRepository repozytorium członkostw w grupach
+     * @param userRepository repozytorium użytkowników
+     */
     public GroupService(
             UserGroupRepository userGroupRepository,
             GroupMemberRepository groupMemberRepository,
@@ -38,6 +48,12 @@ public class GroupService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Pobiera grupy, do których należy użytkownik.
+     *
+     * @param email adres e-mail użytkownika
+     * @return lista grup użytkownika
+     */
     public List<GroupResponse> getCurrentUserGroups(String email) {
         AppUser user = findUser(email);
 
@@ -49,6 +65,13 @@ public class GroupService {
                 .toList();
     }
 
+    /**
+     * Tworzy nową grupę i nadaje użytkownikowi rolę właściciela.
+     *
+     * @param email adres e-mail użytkownika tworzącego grupę
+     * @param name nazwa grupy
+     * @return dane utworzonej grupy
+     */
     @Transactional
     public GroupResponse createGroup(String email, String name) {
         AppUser user = findUser(email);
@@ -67,6 +90,13 @@ public class GroupService {
         return GroupResponse.fromMembership(savedMember, 1);
     }
 
+    /**
+     * Dołącza użytkownika do grupy na podstawie kodu zaproszenia.
+     *
+     * @param email adres e-mail użytkownika
+     * @param inviteCode kod zaproszenia do grupy
+     * @return dane grupy, do której użytkownik dołączył
+     */
     @Transactional
     public GroupResponse joinGroup(String email, String inviteCode) {
         AppUser user = findUser(email);
@@ -86,6 +116,13 @@ public class GroupService {
         return GroupResponse.fromMembership(savedMember, groupMemberRepository.countByGroup(group));
     }
 
+    /**
+     * Pobiera członków grupy po sprawdzeniu, czy użytkownik ma do niej dostęp.
+     *
+     * @param email adres e-mail użytkownika wykonującego operację
+     * @param groupId identyfikator grupy
+     * @return lista członków grupy
+     */
     public List<GroupMemberResponse> getMembers(String email, Long groupId) {
         AppUser user = findUser(email);
         UserGroup group = findGroup(groupId);
@@ -95,6 +132,12 @@ public class GroupService {
                 .map(GroupMemberResponse::fromEntity).toList();
     }
 
+    /**
+     * Usuwa użytkownika z grupy z uwzględnieniem reguły właściciela.
+     *
+     * @param email adres e-mail użytkownika opuszczającego grupę
+     * @param groupId identyfikator grupy
+     */
     @Transactional
     public void leaveGroup(String email, Long groupId) {
         AppUser user = findUser(email);

@@ -14,6 +14,9 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Encja grupy użytkowników współdzielących przepisy, listę zakupów i plan posiłków.
+ */
 @Entity
 @Table(name = "user_groups")
 @Getter

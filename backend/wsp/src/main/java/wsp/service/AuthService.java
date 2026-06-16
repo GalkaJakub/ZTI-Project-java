@@ -14,6 +14,9 @@ import wsp.repository.UserRepository;
 
 import java.util.Locale;
 
+/**
+ * Serwis obsługujący rejestrację, logowanie oraz tworzenie odpowiedzi sesji JWT.
+ */
 @Service
 public class AuthService {
 
@@ -21,12 +24,25 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    /**
+     * Tworzy serwis uwierzytelniania z repozytorium użytkowników, enkoderem haseł i obsługą JWT.
+     *
+     * @param userRepository repozytorium użytkowników
+     * @param passwordEncoder enkoder haseł
+     * @param jwtService serwis generujący tokeny JWT
+     */
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
+    /**
+     * Rejestruje użytkownika po wcześniejszej normalizacji adresu e-mail.
+     *
+     * @param request dane rejestracyjne użytkownika
+     * @return dane sesji wraz z tokenem JWT
+     */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
@@ -43,6 +59,12 @@ public class AuthService {
         return createAuthResponse(savedUser);
     }
 
+    /**
+     * Loguje użytkownika na podstawie adresu e-mail i hasła.
+     *
+     * @param request dane logowania
+     * @return dane sesji wraz z tokenem JWT
+     */
     public AuthResponse login(LoginRequest request) {
         String email = normalizeEmail(request.email());
         AppUser user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));

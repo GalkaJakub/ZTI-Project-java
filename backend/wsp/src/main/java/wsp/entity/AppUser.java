@@ -9,6 +9,9 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Encja reprezentująca konto użytkownika aplikacji.
+ */
 @Entity
 @Table(name = "users")
 @Getter

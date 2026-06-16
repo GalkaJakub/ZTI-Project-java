@@ -17,7 +17,7 @@ import wsp.service.RecipeService;
 import java.util.List;
 
 /**
- * REST controller for recipes stored inside a selected group.
+ * Kontroler REST obsługujący przepisy zapisane w wybranej grupie.
  */
 @RestController
 @RequestMapping("/api/groups/{groupId}/recipes")
@@ -25,16 +25,21 @@ public class RecipeController {
 
     private final RecipeService recipeService;
 
+    /**
+     * Tworzy kontroler przepisów.
+     *
+     * @param recipeService serwis obsługujący przepisy grupowe
+     */
     public RecipeController(RecipeService recipeService) {
         this.recipeService = recipeService;
     }
 
     /**
-     * Returns all recipes assigned to a group visible to the current user.
+     * Zwraca wszystkie przepisy przypisane do grupy dostępnej dla użytkownika.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @return list of recipes with ingredients
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @return lista przepisów wraz ze składnikami
      */
     @GetMapping
     public List<RecipeResponse> getAll(Authentication authentication, @PathVariable Long groupId) {
@@ -42,12 +47,12 @@ public class RecipeController {
     }
 
     /**
-     * Returns one recipe from a group.
+     * Zwraca pojedynczy przepis z wybranej grupy.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @param recipeId recipe identifier
-     * @return recipe details
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param recipeId identyfikator przepisu
+     * @return szczegóły przepisu
      */
     @GetMapping("/{recipeId}")
     public RecipeResponse getById(Authentication authentication, @PathVariable Long groupId, @PathVariable Long recipeId) {
@@ -55,12 +60,12 @@ public class RecipeController {
     }
 
     /**
-     * Creates a recipe with optional ingredients in the selected group.
+     * Tworzy przepis z opcjonalną listą składników w wybranej grupie.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @param request recipe creation data
-     * @return created recipe
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param request dane tworzonego przepisu
+     * @return utworzony przepis
      */
     @PostMapping
     public RecipeResponse create(Authentication authentication,
@@ -70,13 +75,13 @@ public class RecipeController {
     }
 
     /**
-     * Updates recipe data and replaces its ingredients.
+     * Aktualizuje dane przepisu i zastępuje jego składniki.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @param recipeId recipe identifier
-     * @param request new recipe data
-     * @return updated recipe
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param recipeId identyfikator przepisu
+     * @param request nowe dane przepisu
+     * @return zaktualizowany przepis
      */
     @PutMapping("/{recipeId}")
     public RecipeResponse update(Authentication authentication,
@@ -87,11 +92,11 @@ public class RecipeController {
     }
 
     /**
-     * Deletes a recipe from the selected group.
+     * Usuwa przepis z wybranej grupy.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @param recipeId recipe identifier
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param recipeId identyfikator przepisu
      */
     @DeleteMapping("/{recipeId}")
     public void delete(Authentication authentication, @PathVariable Long groupId, @PathVariable Long recipeId) {

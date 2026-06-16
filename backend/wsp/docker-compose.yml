@@ -10,11 +10,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d wsp_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   backend:
     build:
@@ -22,13 +17,12 @@ services:
       dockerfile: Dockerfile
     container_name: ZTI-wsp-backend
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/wsp_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      JWT_SECRET: docker-development-secret-change-before-production-123456
+      JWT_SECRET: zti-wsp-jakub-galka-secret-key-2026-minimum-32-chars
     ports:
       - "8080:8080"
 

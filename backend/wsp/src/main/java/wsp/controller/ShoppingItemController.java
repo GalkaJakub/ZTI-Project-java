@@ -10,7 +10,7 @@ import wsp.service.ShoppingItemService;
 import java.util.List;
 
 /**
- * REST controller for group-scoped shopping list operations.
+ * Kontroler REST obsługujący listę zakupów w kontekście wybranej grupy.
  */
 @RestController
 @RequestMapping("/api/groups/{groupId}/shopping-items")
@@ -18,16 +18,21 @@ public class ShoppingItemController {
 
     private final ShoppingItemService shoppingItemService;
 
+    /**
+     * Tworzy kontroler listy zakupów.
+     *
+     * @param shoppingItemService serwis obsługujący produkty na liście zakupów
+     */
     public ShoppingItemController(ShoppingItemService shoppingItemService) {
         this.shoppingItemService = shoppingItemService;
     }
 
     /**
-     * Returns all shopping items for a group visible to the current user.
+     * Zwraca wszystkie produkty z listy zakupów grupy dostępnej dla użytkownika.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @return shopping items ordered by bought flag and name
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @return produkty posortowane według statusu zakupu i nazwy
      */
     @GetMapping
     public List<ShoppingItemResponse> getAll(Authentication authentication, @PathVariable Long groupId) {
@@ -35,12 +40,12 @@ public class ShoppingItemController {
     }
 
     /**
-     * Adds a new shopping item to the selected group.
+     * Dodaje nowy produkt do listy zakupów wybranej grupy.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @param request item creation data
-     * @return created item
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param request dane tworzonego produktu
+     * @return utworzony produkt
      */
     @PostMapping
     public ShoppingItemResponse create(Authentication authentication, @PathVariable Long groupId, @Valid @RequestBody CreateShoppingItemRequest request) {
@@ -48,12 +53,12 @@ public class ShoppingItemController {
     }
 
     /**
-     * Toggles the bought status of a shopping item.
+     * Przełącza status kupienia produktu.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @param itemId shopping item identifier
-     * @return updated item
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param itemId identyfikator produktu
+     * @return zaktualizowany produkt
      */
     @PatchMapping("/{itemId}/toggle")
     public ShoppingItemResponse toggle(Authentication authentication, @PathVariable Long groupId, @PathVariable Long itemId) {
@@ -61,11 +66,11 @@ public class ShoppingItemController {
     }
 
     /**
-     * Deletes a shopping item from the selected group.
+     * Usuwa produkt z listy zakupów wybranej grupy.
      *
-     * @param authentication Spring Security authentication containing user email
-     * @param groupId group identifier
-     * @param itemId shopping item identifier
+     * @param authentication obiekt uwierzytelnienia Spring Security z adresem e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param itemId identyfikator produktu
      */
     @DeleteMapping("/{itemId}")
     public void delete(Authentication authentication, @PathVariable Long groupId, @PathVariable Long itemId) {

@@ -19,6 +19,9 @@ import wsp.repository.UserRepository;
 
 import java.util.List;
 
+/**
+ * Serwis obsługujący listę zakupów w ramach grup użytkowników.
+ */
 @Service
 public class ShoppingItemService {
 
@@ -27,6 +30,14 @@ public class ShoppingItemService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Tworzy serwis listy zakupów z repozytoriami do zapisu produktów i kontroli członkostwa.
+     *
+     * @param shoppingItemRepository repozytorium produktów zakupowych
+     * @param userGroupRepository repozytorium grup
+     * @param groupMemberRepository repozytorium członkostw grupowych
+     * @param userRepository repozytorium użytkowników
+     */
     public ShoppingItemService(ShoppingItemRepository shoppingItemRepository,
                                UserGroupRepository userGroupRepository,
                                GroupMemberRepository groupMemberRepository,
@@ -37,6 +48,13 @@ public class ShoppingItemService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Pobiera produkty z listy zakupów po sprawdzeniu dostępu użytkownika do grupy.
+     *
+     * @param email adres e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @return lista produktów zakupowych
+     */
     @Transactional(readOnly = true)
     public List<ShoppingItemResponse> getAll(String email, Long groupId) {
         UserGroup group = getAccessibleGroup(email, groupId);
@@ -45,6 +63,14 @@ public class ShoppingItemService {
                 .toList();
     }
 
+    /**
+     * Tworzy produkt na liście zakupów grupy i zapisuje zdarzenie audytu.
+     *
+     * @param email adres e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param request dane produktu
+     * @return utworzony produkt
+     */
     @Transactional
     @Auditable(action = AuditAction.CREATE, entityType = "ShoppingItem")
     public ShoppingItemResponse create(String email, Long groupId, CreateShoppingItemRequest request) {
@@ -59,6 +85,14 @@ public class ShoppingItemService {
         return ShoppingItemResponse.fromEntity(shoppingItemRepository.save(item));
     }
 
+    /**
+     * Przełącza status kupienia produktu i zapisuje zdarzenie audytu.
+     *
+     * @param email adres e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param itemId identyfikator produktu
+     * @return zaktualizowany produkt
+     */
     @Transactional
     @Auditable(action = AuditAction.MARK_AS_PURCHASED, entityType = "ShoppingItem", entityIdArg = "itemId")
     public ShoppingItemResponse toggleBought(String email, Long groupId, Long itemId) {
@@ -68,6 +102,13 @@ public class ShoppingItemService {
         return ShoppingItemResponse.fromEntity(shoppingItemRepository.save(item));
     }
 
+    /**
+     * Usuwa produkt z listy zakupów i zapisuje zdarzenie audytu.
+     *
+     * @param email adres e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param itemId identyfikator produktu
+     */
     @Transactional
     @Auditable(action = AuditAction.DELETE, entityType = "ShoppingItem", entityIdArg = "itemId")
     public void delete(String email, Long groupId, Long itemId) {

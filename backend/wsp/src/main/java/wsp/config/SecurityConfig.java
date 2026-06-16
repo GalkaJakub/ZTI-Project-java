@@ -18,15 +18,30 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Konfiguracja Spring Security, CORS oraz bezstanowego uwierzytelniania JWT.
+ */
 @Configuration
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * Tworzy konfigurację zabezpieczeń z filtrem uwierzytelniania JWT.
+     *
+     * @param jwtAuthenticationFilter filtr odczytujący token Bearer z żądań HTTP
+     */
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    /**
+     * Definiuje łańcuch filtrów bezpieczeństwa dla endpointów REST.
+     *
+     * @param http konfigurator zabezpieczeń HTTP
+     * @return skonfigurowany łańcuch filtrów
+     * @throws Exception gdy konfiguracja zabezpieczeń nie może zostać zbudowana
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
@@ -45,6 +60,11 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Konfiguruje CORS dla klienta uruchamianego lokalnie.
+     *
+     * @return źródło konfiguracji CORS
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

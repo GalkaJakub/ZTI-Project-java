@@ -14,6 +14,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Encja wpisu audytu zapisująca kto, kiedy i na jakim obiekcie wykonał operację.
+ */
 @Entity
 @Table(name = "audit_logs")
 @Getter

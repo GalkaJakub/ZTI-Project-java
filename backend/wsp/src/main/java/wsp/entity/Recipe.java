@@ -16,6 +16,9 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Encja przepisu należącego do grupy użytkowników.
+ */
 @Entity
 @Table(name = "recipes")
 @Getter
@@ -42,11 +45,19 @@ public class Recipe {
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RecipeIngredient> ingredients = new ArrayList<>();
 
+    /**
+     * Dodaje składnik do przepisu i ustawia relację zwrotną.
+     *
+     * @param ingredient składnik dodawany do przepisu
+     */
     public void addIngredient(RecipeIngredient ingredient) {
         ingredients.add(ingredient);
         ingredient.setRecipe(this);
     }
 
+    /**
+     * Usuwa wszystkie składniki przepisu z uwzględnieniem relacji dwukierunkowej.
+     */
     public void clearIngredients() {
         ingredients.forEach(ingredient -> ingredient.setRecipe(null));
         ingredients.clear();

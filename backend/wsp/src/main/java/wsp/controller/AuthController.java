@@ -12,7 +12,7 @@ import wsp.dto.RegisterRequest;
 import wsp.service.AuthService;
 
 /**
- * REST controller responsible for user registration, login and logout endpoints.
+ * Kontroler REST odpowiedzialny za rejestrację, logowanie i wylogowanie użytkowników.
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -20,16 +20,21 @@ public class AuthController {
 
     private final AuthService authService;
 
+    /**
+     * Tworzy kontroler uwierzytelniania z wymaganym serwisem logowania.
+     *
+     * @param authService serwis obsługujący rejestrację i logowanie
+     */
     public AuthController(AuthService authService)
     {
         this.authService = authService;
     }
 
     /**
-     * Registers a new user account and returns a JWT session response.
+     * Rejestruje nowe konto użytkownika i zwraca dane sesji JWT.
      *
-     * @param request registration form data
-     * @return authentication response with bearer token and user data
+     * @param request dane formularza rejestracji
+     * @return odpowiedź uwierzytelniania z tokenem Bearer i danymi użytkownika
      */
     @PostMapping("/register")
     public AuthResponse register(@Valid @RequestBody RegisterRequest request)
@@ -38,10 +43,10 @@ public class AuthController {
     }
 
     /**
-     * Authenticates an existing user and returns a JWT session response.
+     * Uwierzytelnia istniejącego użytkownika i zwraca dane sesji JWT.
      *
-     * @param request login credentials
-     * @return authentication response with bearer token and user data
+     * @param request dane logowania
+     * @return odpowiedź uwierzytelniania z tokenem Bearer i danymi użytkownika
      */
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request)
@@ -50,9 +55,9 @@ public class AuthController {
     }
 
     /**
-     * Stateless logout endpoint used by the client after clearing the local token.
+     * Bezstanowy endpoint wylogowania używany po usunięciu tokena po stronie klienta.
      *
-     * @return empty 204 response
+     * @return pusta odpowiedź HTTP 204
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout()

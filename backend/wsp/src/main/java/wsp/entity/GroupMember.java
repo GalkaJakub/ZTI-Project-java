@@ -17,6 +17,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Encja członkostwa użytkownika w grupie wraz z rolą i datą dołączenia.
+ */
 @Entity
 @Table(
         name = "group_members",

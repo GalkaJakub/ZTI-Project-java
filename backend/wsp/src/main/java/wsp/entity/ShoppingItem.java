@@ -11,6 +11,9 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Encja produktu znajdującego się na grupowej liście zakupów.
+ */
 @Entity
 @Table(name = "shopping_items")
 @Getter

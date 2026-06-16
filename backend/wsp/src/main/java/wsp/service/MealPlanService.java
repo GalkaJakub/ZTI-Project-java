@@ -26,6 +26,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 
+/**
+ * Serwis obsługujący tygodniowe plany posiłków oraz zaplanowane posiłki.
+ */
 @Service
 public class MealPlanService {
 
@@ -36,6 +39,16 @@ public class MealPlanService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Tworzy serwis planów posiłków z repozytoriami wymaganymi do walidacji dostępu i zapisu posiłków.
+     *
+     * @param mealPlanRepository repozytorium tygodniowych planów posiłków
+     * @param plannedMealRepository repozytorium zaplanowanych posiłków
+     * @param recipeRepository repozytorium przepisów
+     * @param userGroupRepository repozytorium grup
+     * @param groupMemberRepository repozytorium członkostw grupowych
+     * @param userRepository repozytorium użytkowników
+     */
     public MealPlanService(MealPlanRepository mealPlanRepository,
                            PlannedMealRepository plannedMealRepository,
                            RecipeRepository recipeRepository,
@@ -50,6 +63,14 @@ public class MealPlanService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Pobiera lub tworzy tygodniowy plan posiłków dla grupy.
+     *
+     * @param email adres e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param dateInWeek dowolna data z wybranego tygodnia
+     * @return tygodniowy plan posiłków
+     */
     @Transactional
     public MealPlanResponse getWeekPlan(String email, Long groupId, LocalDate dateInWeek) {
         UserGroup group = getAccessibleGroup(email, groupId);
@@ -57,6 +78,15 @@ public class MealPlanService {
         return MealPlanResponse.fromEntity(mealPlan);
     }
 
+    /**
+     * Dodaje posiłek do tygodniowego planu i zapisuje zdarzenie audytu.
+     *
+     * @param email adres e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param dateInWeek dowolna data z wybranego tygodnia
+     * @param request dane posiłku
+     * @return utworzony zaplanowany posiłek
+     */
     @Transactional
     @Auditable(action = AuditAction.CREATE, entityType = "PlannedMeal")
     public PlannedMealResponse createMeal(String email, Long groupId, LocalDate dateInWeek, CreatePlannedMealRequest request) {
@@ -73,6 +103,16 @@ public class MealPlanService {
         return PlannedMealResponse.fromEntity(savedMeal);
     }
 
+    /**
+     * Aktualizuje posiłek w tygodniowym planie i zapisuje zdarzenie audytu.
+     *
+     * @param email adres e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param dateInWeek dowolna data z wybranego tygodnia
+     * @param mealId identyfikator zaplanowanego posiłku
+     * @param request nowe dane posiłku
+     * @return zaktualizowany zaplanowany posiłek
+     */
     @Transactional
     @Auditable(action = AuditAction.UPDATE, entityType = "PlannedMeal", entityIdArg = "mealId")
     public PlannedMealResponse updateMeal(String email, Long groupId, LocalDate dateInWeek, Long mealId, CreatePlannedMealRequest request) {
@@ -87,6 +127,14 @@ public class MealPlanService {
         return PlannedMealResponse.fromEntity(plannedMealRepository.save(meal));
     }
 
+    /**
+     * Usuwa posiłek z tygodniowego planu i zapisuje zdarzenie audytu.
+     *
+     * @param email adres e-mail użytkownika
+     * @param groupId identyfikator grupy
+     * @param dateInWeek dowolna data z wybranego tygodnia
+     * @param mealId identyfikator zaplanowanego posiłku
+     */
     @Transactional
     @Auditable(action = AuditAction.DELETE, entityType = "PlannedMeal", entityIdArg = "mealId")
     public void deleteMeal(String email, Long groupId, LocalDate dateInWeek, Long mealId) {

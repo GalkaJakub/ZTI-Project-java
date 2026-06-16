@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Filtr bezpieczeństwa odczytujący token JWT z nagłówka Authorization i ustawiający kontekst użytkownika.
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -25,11 +28,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
+    /**
+     * Tworzy filtr JWT z serwisem tokenów i repozytorium użytkowników.
+     *
+     * @param jwtService serwis walidujący tokeny JWT
+     * @param userRepository repozytorium użytkowników aplikacji
+     */
     public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
     }
 
+    /**
+     * Obsługuje pojedyncze żądanie HTTP i próbuje uwierzytelnić użytkownika na podstawie tokena Bearer.
+     *
+     * @param request żądanie HTTP
+     * @param response odpowiedź HTTP
+     * @param filterChain łańcuch filtrów Spring Security
+     * @throws ServletException gdy filtr nie może przetworzyć żądania
+     * @throws IOException gdy wystąpi błąd wejścia-wyjścia
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException
