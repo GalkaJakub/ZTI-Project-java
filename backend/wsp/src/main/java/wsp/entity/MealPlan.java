@@ -43,24 +43,4 @@ public class MealPlan {
 
     @OneToMany(mappedBy = "mealPlan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlannedMeal> meals = new ArrayList<>();
-
-    /**
-     * Dodaje posiłek do planu i ustawia relację zwrotną.
-     *
-     * @param meal posiłek dodawany do planu
-     */
-    public void addMeal(PlannedMeal meal) {
-        meals.add(meal);
-        meal.setMealPlan(this);
-    }
-
-    /**
-     * Usuwa posiłek z planu i czyści relację zwrotną.
-     *
-     * @param meal posiłek usuwany z planu
-     */
-    public void removeMeal(PlannedMeal meal) {
-        meals.remove(meal);
-        meal.setMealPlan(null);
-    }
 }

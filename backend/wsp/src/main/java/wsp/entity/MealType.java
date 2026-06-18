@@ -6,7 +6,7 @@ package wsp.entity;
 public enum MealType {
     /** Śniadanie. */
     BREAKFAST,
-    /** Lunch lub drugie śniadanie. */
+    /** Lunch. */
     LUNCH,
     /** Obiad. */
     DINNER,

@@ -149,14 +149,24 @@ public class RecipeService {
         recipe.setDescription(request.description() == null ? null : request.description().trim());
         recipe.setInstructions(request.instructions().trim());
 
-        recipe.clearIngredients();
+        clearRecipeIngredients(recipe);
         if (request.ingredients() == null) {
             return;
         }
 
         request.ingredients().stream()
                 .map(this::toIngredient)
-                .forEach(recipe::addIngredient);
+                .forEach(ingredient -> addIngredientToRecipe(recipe, ingredient));
+    }
+
+    private void addIngredientToRecipe(Recipe recipe, RecipeIngredient ingredient) {
+        recipe.getIngredients().add(ingredient);
+        ingredient.setRecipe(recipe);
+    }
+
+    private void clearRecipeIngredients(Recipe recipe) {
+        recipe.getIngredients().forEach(ingredient -> ingredient.setRecipe(null));
+        recipe.getIngredients().clear();
     }
 
     private RecipeIngredient toIngredient(CreateRecipeIngredientRequest request) {

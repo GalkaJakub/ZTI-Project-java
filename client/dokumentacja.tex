@@ -1,0 +1,442 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\geometry{margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    pdftitle={Dokumentacja projektu WSP},
+    pdfauthor={Jakub Gałka}
+}
+
+\definecolor{codegray}{RGB}{245,245,245}
+\definecolor{codeborder}{RGB}{210,210,210}
+\definecolor{codegreen}{RGB}{0,110,60}
+
+\lstdefinestyle{terminal}{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{codeborder},
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstdefinestyle{yaml}{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{codeborder},
+    columns=fullflexible,
+    keepspaces=true,
+    commentstyle=\color{codegreen}
+}
+
+\newcommand{\placeholder}[1]{%
+    \begin{center}
+        \fbox{\parbox{0.86\textwidth}{\centering\textit{#1}}}
+    \end{center}
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\Large Informatyka Stosowana\par}
+    \vspace{0.6cm}
+    {\large Zaawansowane Technologie Internetowe\par}
+
+    \vspace{2.5cm}
+    {\LARGE\bfseries Aplikacja internetowa do współdzielonego planowania posiłków i organizacji zakupów spożywczych\par}
+
+    \vspace{2cm}
+    {\large Dokumentacja funkcjonalna i wdrożeniowa\par}
+
+    \vfill
+
+    \begin{tabular}{rl}
+        Autor: & Jakub Gałka \\
+        Projekt: & WSP \\
+        Technologie: & Java Spring Boot, Flutter, PostgreSQL, Docker \\
+    \end{tabular}
+
+    \vspace{2cm}
+    {\large \today\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Cel i zakres aplikacji}
+
+Celem projektu jest przygotowanie aplikacji wspierającej wspólne planowanie posiłków oraz organizację zakupów spożywczych. System jest przeznaczony dla osób działających w jednej grupie, na przykład domowników, współlokatorów lub małego zespołu, który chce utrzymywać wspólny plan tygodnia i listę produktów do kupienia.
+
+Zakres projektu obejmuje część serwerową, aplikację kliencką oraz środowisko uruchomieniowe. Backend udostępnia REST API, obsługuje logikę biznesową, autoryzację i zapis danych w PostgreSQL. Frontend jest aplikacją Flutter komunikującą się z API. Wdrożenie backendu i bazy danych zostało przygotowane z użyciem kontenerów Docker oraz pliku \texttt{docker-compose.yml}.
+
+Najważniejsze cele funkcjonalne aplikacji:
+
+\begin{itemize}
+    \item obsługa kont użytkowników i profilu,
+    \item tworzenie grup oraz dołączanie do grup kodem zaproszenia,
+    \item planowanie posiłków w układzie tygodniowym,
+    \item prowadzenie wspólnej listy zakupów,
+    \item dodawanie i przeglądanie przepisów,
+    \item rejestrowanie wybranych zdarzeń systemowych po stronie backendu.
+\end{itemize}
+
+\section{Opis funkcjonalności aplikacji}
+
+\subsection{Zarządzanie użytkownikami}
+
+Aplikacja umożliwia rejestrację nowego użytkownika, logowanie, wylogowanie oraz edycję podstawowych danych profilu. Po poprawnym zalogowaniu użytkownik otrzymuje token JWT, który jest używany przy kolejnych żądaniach wymagających autoryzacji.
+
+Wylogowanie ma charakter bezstanowy. Oznacza to, że klient usuwa zapisany token, a backend udostępnia endpoint zamykający przepływ logowania po stronie aplikacji.
+
+\placeholder{[Miejsce na zrzut ekranu: ekran logowania]}
+
+\subsection{Grupy użytkowników}
+
+Podstawową jednostką współdzielenia danych jest grupa. Użytkownik może utworzyć własną grupę, a następnie przekazać innym osobom kod zaproszenia. Osoby posiadające kod mogą dołączyć do grupy i współdzielić jej listę zakupów, przepisy oraz plan posiłków.
+
+System obsługuje role członków grupy, w tym właściciela grupy. Operacje na danych grupowych są wykonywane wyłącznie w kontekście grupy, do której użytkownik należy.
+
+\subsection{Planowanie posiłków}
+
+Moduł planowania posiłków pozwala prowadzić tygodniowy plan. Użytkownik może dodać posiłek na konkretny dzień, określić typ posiłku oraz opcjonalnie powiązać go z przepisem. Dostępne są operacje dodawania, edycji i usuwania zaplanowanych posiłków.
+
+Plan tygodniowy pozwala szybko sprawdzić, jakie posiłki są zaplanowane w najbliższych dniach i ograniczyć powtarzające się ustalenia między członkami grupy.
+
+\placeholder{[Miejsce na zrzut ekranu: tygodniowy plan posiłków]}
+
+\subsection{Lista zakupów}
+
+Lista zakupów umożliwia dodawanie produktów do wspólnej listy grupy. Każdy produkt może zostać oznaczony jako kupiony, co ułatwia bieżącą współpracę między użytkownikami. Produkty można również usuwać z listy.
+
+Funkcjonalność jest przydatna zwłaszcza wtedy, gdy kilka osób korzysta z jednej listy i aktualizuje jej stan w różnym czasie.
+
+\subsection{Przepisy}
+
+Moduł przepisów pozwala dodawać i przeglądać przepisy kulinarne. Przepis może zawierać nazwę, opis oraz składniki. Wybrany przepis może zostać użyty podczas dodawania posiłku do planu, dzięki czemu planowanie posiłków jest powiązane z bazą przepisów.
+
+\subsection{Rejestrowanie zdarzeń systemowych przez Spring AOP}
+
+Backend wykorzystuje mechanizm Spring AOP do rejestrowania wybranych zdarzeń systemowych. Operacje oznaczone adnotacją audytową są przechwytywane przez aspekt, a następnie zapisywane jako log audytowy. Pozwala to oddzielić logikę rejestrowania zdarzeń od właściwej logiki biznesowej serwisów.
+
+\section{Część serwerowa}
+
+\subsection{Spring Boot REST API}
+
+Część serwerowa została zaimplementowana w Java Spring Boot. API jest podzielone na kontrolery odpowiadające modułom aplikacji:
+
+\begin{longtable}{|p{0.32\textwidth}|p{0.58\textwidth}|}
+\hline
+\textbf{Kontroler} & \textbf{Zakres odpowiedzialności} \\
+\hline
+\texttt{AuthController} & Rejestracja, logowanie oraz wylogowanie użytkownika. \\
+\hline
+\texttt{UserController} & Pobieranie i aktualizacja danych profilu użytkownika. \\
+\hline
+\texttt{GroupController} & Tworzenie grup, dołączanie kodem zaproszenia, lista grup i członków. \\
+\hline
+\texttt{MealPlanController} & Obsługa planu posiłków oraz zaplanowanych posiłków. \\
+\hline
+\texttt{ShoppingItemController} & Dodawanie, aktualizacja i usuwanie elementów listy zakupów. \\
+\hline
+\texttt{RecipeController} & Dodawanie i pobieranie przepisów oraz ich składników. \\
+\hline
+\end{longtable}
+
+API działa domyślnie na porcie \texttt{8080}. Dokumentacja OpenAPI jest udostępniana pod adresem \texttt{/swagger-ui.html}, a definicja API pod \texttt{/v3/api-docs}.
+
+\subsection{Spring Data JPA i Hibernate}
+
+Warstwa dostępu do danych została przygotowana z użyciem Spring Data JPA oraz Hibernate. Encje reprezentują między innymi użytkownika, grupę, członkostwo w grupie, plan posiłków, zaplanowany posiłek, przepis, składnik przepisu, element listy zakupów oraz wpis audytowy.
+
+Repozytoria JPA odpowiadają za komunikację z bazą danych, natomiast logika biznesowa znajduje się w serwisach, takich jak \texttt{AuthService}, \texttt{GroupService}, \texttt{MealPlanService}, \texttt{RecipeService} i \texttt{ShoppingItemService}.
+
+\subsection{PostgreSQL}
+
+Dane aplikacji są zapisywane w bazie PostgreSQL. W konfiguracji lokalnej domyślna baza nosi nazwę \texttt{wsp\_db}, użytkownik to \texttt{postgres}, a hasło to \texttt{postgres}. W środowisku kontenerowym backend łączy się z bazą przez nazwę usługi \texttt{db}.
+
+Najważniejsze ustawienia aplikacji:
+
+\begin{lstlisting}[style=terminal]
+server.port=8080
+spring.datasource.url=jdbc:postgresql://localhost:5432/wsp_db
+spring.jpa.hibernate.ddl-auto=update
+springdoc.swagger-ui.path=/swagger-ui.html
+\end{lstlisting}
+
+\subsection{JWT i Spring Security}
+
+Uwierzytelnianie opiera się na tokenach JWT. Po rejestracji lub logowaniu backend zwraca token, który klient przesyła w nagłówku:
+
+\begin{lstlisting}[style=terminal]
+Authorization: Bearer <token>
+\end{lstlisting}
+
+Spring Security filtruje żądania i sprawdza poprawność tokena. Endpointy publiczne obejmują przede wszystkim rejestrację i logowanie, natomiast operacje na grupach, planach, przepisach, profilu i liście zakupów wymagają uwierzytelnienia.
+
+\subsection{Spring AOP do logowania zdarzeń}
+
+Rejestrowanie zdarzeń zostało zrealizowane przez aspekt \texttt{AuditAspect} oraz adnotację \texttt{Auditable}. Dzięki temu metody biznesowe mogą być oznaczane jako audytowane, a sam zapis zdarzenia odbywa się poza główną logiką serwisu. Wpisy audytowe są przechowywane w encji \texttt{AuditLog}.
+
+\section{Część kliencka}
+
+\subsection{Flutter}
+
+Część kliencka została przygotowana jako aplikacja Flutter. Struktura kodu jest podzielona według funkcji aplikacji: autoryzacja, grupy, plan posiłków, przepisy, lista zakupów, profil oraz ekran główny. Taki podział ułatwia rozwijanie kolejnych modułów.
+
+\subsection{Komunikacja z REST API}
+
+Komunikacja z backendem odbywa się przez klasę \texttt{ApiClient}, która obsługuje metody HTTP \texttt{GET}, \texttt{POST}, \texttt{PUT}, \texttt{PATCH} i \texttt{DELETE}. Klient koduje dane jako JSON i obsługuje odpowiedzi błędów zwracane przez API.
+
+Domyślny adres backendu skonfigurowany w aplikacji klienckiej wskazuje na maszynę wirtualną:
+
+\begin{lstlisting}[style=terminal]
+http://172.20.41.12:8080
+\end{lstlisting}
+
+\subsection{Logowanie i przechowywanie tokena JWT}
+
+Po zalogowaniu token JWT jest zapisywany po stronie klienta przy użyciu pakietu \texttt{flutter\_secure\_\allowbreak storage}. Przy żądaniach wymagających autoryzacji token jest odczytywany i dodawany do nagłówka \texttt{Authorization}.
+
+\subsection{Podstawowe ekrany aplikacji}
+
+Najważniejsze ekrany aplikacji:
+
+\begin{itemize}
+    \item ekran logowania i rejestracji,
+    \item ekran główny z nawigacją między modułami,
+    \item ekran grup i kodu zaproszenia,
+    \item ekran tygodniowego planu posiłków,
+    \item ekran listy zakupów,
+    \item ekran przepisów,
+    \item ekran profilu użytkownika.
+\end{itemize}
+
+\placeholder{[Miejsce na zrzut ekranu: ekran listy zakupów]}
+\placeholder{[Miejsce na zrzut ekranu: ekran przepisów]}
+
+\section{Prezentacja wybranych testów}
+
+\subsection{Testy backendu}
+
+Backend zawiera testy jednostkowe i integracyjne dla najważniejszych serwisów. W projekcie znajdują się między innymi testy:
+
+\begin{itemize}
+    \item \texttt{GroupServiceTest},
+    \item \texttt{MealPlanServiceTest},
+    \item \texttt{RecipeServiceTest},
+    \item \texttt{ShoppingItemServiceTest},
+    \item \texttt{AuditAspectIntegrationTest},
+    \item \texttt{WspApplicationTests}.
+\end{itemize}
+
+Testy backendu sprawdzają reguły biznesowe, poprawność operacji na danych oraz działanie mechanizmu audytu. W środowisku testowym wykorzystywana jest baza H2, co pozwala uruchamiać testy bez zewnętrznej instancji PostgreSQL.
+
+\subsection{Testy klienta}
+
+Po stronie Fluttera dostępny jest przykładowy test widgetów w katalogu \texttt{test}. Oprócz testów automatycznych wykonano testy ręczne najważniejszych scenariuszy użytkownika, ponieważ część funkcji wymaga współpracy z uruchomionym backendem i bazą danych.
+
+\subsection{Przykładowe przypadki testowe}
+
+\begin{longtable}{|p{0.18\textwidth}|p{0.34\textwidth}|p{0.29\textwidth}|p{0.07\textwidth}|}
+\hline
+\textbf{Nazwa testu} & \textbf{Opis} & \textbf{Oczekiwany rezultat} & \textbf{Status} \\
+\hline
+Rejestracja użytkownika & Utworzenie konta z poprawnymi danymi. & Konto zostaje zapisane, a API zwraca token JWT. & OK \\
+\hline
+Logowanie użytkownika & Logowanie poprawnym adresem e-mail i hasłem. & Użytkownik przechodzi do aplikacji, token zostaje zapisany. & OK \\
+\hline
+Utworzenie grupy & Zalogowany użytkownik tworzy nową grupę. & Grupa pojawia się na liście, generowany jest kod zaproszenia. & OK \\
+\hline
+Dołączenie kodem & Drugi użytkownik wpisuje kod zaproszenia. & Użytkownik zostaje członkiem tej samej grupy. & OK \\
+\hline
+Dodanie produktu & Dodanie produktu do listy zakupów grupy. & Produkt jest widoczny na wspólnej liście. & OK \\
+\hline
+Oznaczenie produktu & Zmiana statusu produktu na kupiony. & Element listy zmienia stan i pozostaje widoczny z nowym statusem. & OK \\
+\hline
+Dodanie posiłku & Dodanie posiłku do wybranego dnia tygodnia. & Posiłek pojawia się w planie tygodniowym. & OK \\
+\hline
+Dodanie przepisu & Utworzenie przepisu ze składnikami. & Przepis jest widoczny na liście i może zostać użyty w planie. & OK \\
+\hline
+Audyt operacji & Wykonanie operacji oznaczonej jako audytowana. & W bazie powstaje wpis audytowy. & OK \\
+\hline
+\end{longtable}
+
+\section{Informacja uruchomieniowa i wdrożeniowa}
+
+\subsection{Wymagania}
+
+Do uruchomienia projektu wymagane są:
+
+\begin{itemize}
+    \item Java 21,
+    \item Maven lub wrapper Maven dołączony do projektu,
+    \item Docker,
+    \item Docker Compose,
+    \item Flutter SDK,
+    \item dostęp do portów \texttt{8080} i \texttt{5432}.
+\end{itemize}
+
+\subsection{Uruchomienie lokalne backendu}
+
+Backend można uruchomić lokalnie z katalogu \texttt{backend/wsp}. Przed startem aplikacji musi działać baza PostgreSQL zgodna z konfiguracją w pliku \texttt{application.properties}.
+
+\begin{lstlisting}[style=terminal]
+cd backend/wsp
+./mvnw spring-boot:run
+\end{lstlisting}
+
+Uruchomienie testów backendu:
+
+\begin{lstlisting}[style=terminal]
+cd backend/wsp
+./mvnw test
+\end{lstlisting}
+
+\subsection{Uruchomienie bazy PostgreSQL w Dockerze}
+
+Samą bazę danych można uruchomić z wykorzystaniem usługi \texttt{db} z pliku \texttt{docker-\allowbreak compose.yml}:
+
+\begin{lstlisting}[style=terminal]
+cd backend/wsp
+docker-compose up -d db
+\end{lstlisting}
+
+Po uruchomieniu baza jest dostępna lokalnie na porcie \texttt{5432}.
+
+\subsection{Uruchomienie całego backendu przez docker-compose}
+
+Najprostszy sposób uruchomienia backendu razem z bazą danych to użycie Docker Compose:
+
+\begin{lstlisting}[style=terminal]
+cd backend/wsp
+docker-compose up -d --build
+docker ps
+docker logs -f ZTI-wsp-backend
+\end{lstlisting}
+
+Fragment konfiguracji \texttt{docker-compose.yml}:
+
+\begin{lstlisting}[style=yaml]
+services:
+  db:
+    image: postgres:16
+    container_name: ZTI-wsp-postgres
+    environment:
+      POSTGRES_DB: wsp_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ZTI-wsp-backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/wsp_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+\end{lstlisting}
+
+\subsection{Uruchomienie aplikacji Flutter}
+
+Frontend można uruchomić z katalogu \texttt{client/wsp}. Aplikacja komunikuje się z backendem pod adresem skonfigurowanym w kliencie API.
+
+\begin{lstlisting}[style=terminal]
+cd client/wsp
+flutter pub get
+flutter run
+\end{lstlisting}
+
+Testy klienta:
+
+\begin{lstlisting}[style=terminal]
+cd client/wsp
+flutter test
+\end{lstlisting}
+
+\subsection{Wdrożenie na maszynie wirtualnej ZTI}
+
+Aplikacja została przygotowana do pracy na maszynie wirtualnej ZTI o adresie IP:
+
+\begin{lstlisting}[style=terminal]
+172.20.41.12
+\end{lstlisting}
+
+Na maszynie wirtualnej uruchamiane są kontenery backendu oraz bazy danych PostgreSQL. Backend jest wystawiany na porcie \texttt{8080}, a aplikacja Flutter komunikuje się z adresem \texttt{http://172.20.41.12:8080}.
+
+Przykładowa procedura wdrożenia:
+
+\begin{lstlisting}[style=terminal]
+cd backend/wsp
+docker-compose up -d --build
+docker ps
+docker logs -f ZTI-wsp-backend
+\end{lstlisting}
+
+\section{Podstawowy podręcznik użytkownika}
+
+\subsection{Rejestracja konta}
+
+Użytkownik otwiera aplikację, wybiera rejestrację i podaje wymagane dane konta. Po poprawnym utworzeniu konta może przejść do korzystania z aplikacji.
+
+\subsection{Logowanie}
+
+Na ekranie logowania użytkownik wpisuje adres e-mail i hasło. Po poprawnym uwierzytelnieniu aplikacja zapisuje token sesji i przechodzi do ekranu głównego.
+
+\subsection{Utworzenie grupy}
+
+Po zalogowaniu użytkownik przechodzi do ekranu grup i wybiera opcję utworzenia grupy. Następnie podaje nazwę grupy. System tworzy grupę i wyświetla kod zaproszenia.
+
+\subsection{Dołączenie do grupy kodem}
+
+Użytkownik, który otrzymał kod zaproszenia, przechodzi do ekranu grup i wpisuje kod. Po zatwierdzeniu zostaje dodany do grupy i uzyskuje dostęp do jej danych.
+
+\subsection{Dodanie produktu do listy zakupów}
+
+Na ekranie listy zakupów użytkownik wybiera dodanie produktu, wpisuje nazwę oraz opcjonalne szczegóły. Produkt zostaje zapisany na wspólnej liście grupy.
+
+\subsection{Oznaczenie produktu jako kupione}
+
+Na liście zakupów użytkownik wybiera produkt i zmienia jego status na kupiony. Pozostali członkowie grupy widzą zaktualizowany stan listy.
+
+\subsection{Dodanie posiłku do planu}
+
+Na ekranie planu posiłków użytkownik wybiera dzień oraz typ posiłku, a następnie podaje nazwę posiłku lub wybiera przepis. Po zapisaniu pozycja pojawia się w tygodniowym planie.
+
+\subsection{Dodanie przepisu}
+
+Na ekranie przepisów użytkownik wybiera dodanie przepisu, uzupełnia nazwę, opis oraz składniki. Przepis może później zostać wykorzystany przy planowaniu posiłku.
+
+\section{Podsumowanie}
+
+Projekt realizuje kompletny przepływ pracy związany ze wspólnym planowaniem posiłków i zakupów. Backend Spring Boot odpowiada za REST API, bezpieczeństwo, logikę biznesową i zapis danych w PostgreSQL. Aplikacja Flutter zapewnia mobilny interfejs użytkownika oraz komunikację z API z użyciem tokena JWT. Docker Compose upraszcza uruchamianie backendu i bazy danych zarówno lokalnie, jak i na maszynie wirtualnej ZTI.
+
+Najważniejsze założenia projektu zostały spełnione: użytkownicy mogą tworzyć grupy, współdzielić listę zakupów, planować posiłki, korzystać z przepisów oraz pracować na wspólnych danych przechowywanych po stronie serwera.
+
+\end{document}

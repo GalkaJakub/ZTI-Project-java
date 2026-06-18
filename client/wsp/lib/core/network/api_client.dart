@@ -7,7 +7,7 @@ class ApiClient {
   ApiClient({
     http.Client? client,
     AuthTokenStorage? tokenStorage,
-    this.baseUrl = 'http://localhost:8080',
+    this.baseUrl = 'http://172.20.41.12:8080',
   }) : _client = client ?? http.Client(),
        _tokenStorage = tokenStorage ?? AuthTokenStorage();
 

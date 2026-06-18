@@ -97,7 +97,7 @@ public class MealPlanService {
         MealPlan mealPlan = getOrCreateMealPlan(group, weekStartDate);
         PlannedMeal meal = new PlannedMeal();
         updateMeal(meal, group, request);
-        mealPlan.addMeal(meal);
+        addMealToPlan(mealPlan, meal);
 
         PlannedMeal savedMeal = plannedMealRepository.saveAndFlush(meal);
         return PlannedMealResponse.fromEntity(savedMeal);
@@ -141,8 +141,18 @@ public class MealPlanService {
         UserGroup group = getAccessibleGroup(email, groupId);
         MealPlan mealPlan = findMealPlan(group, startOfWeek(dateInWeek));
         PlannedMeal meal = findMeal(mealPlan, mealId);
-        mealPlan.removeMeal(meal);
+        removeMealFromPlan(mealPlan, meal);
         mealPlanRepository.saveAndFlush(mealPlan);
+    }
+
+    private void addMealToPlan(MealPlan mealPlan, PlannedMeal meal) {
+        mealPlan.getMeals().add(meal);
+        meal.setMealPlan(mealPlan);
+    }
+
+    private void removeMealFromPlan(MealPlan mealPlan, PlannedMeal meal) {
+        mealPlan.getMeals().remove(meal);
+        meal.setMealPlan(null);
     }
 
     private MealPlan getOrCreateMealPlan(UserGroup group, LocalDate weekStartDate) {

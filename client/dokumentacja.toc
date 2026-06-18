@@ -1,0 +1,41 @@
+\babel@toc {polish}{}\relax 
+\contentsline {section}{\numberline {1}Cel i zakres aplikacji}{2}{section.1}%
+\contentsline {section}{\numberline {2}Opis funkcjonalności aplikacji}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Zarządzanie użytkownikami}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Grupy użytkowników}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Planowanie posiłków}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Lista zakupów}{3}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Przepisy}{3}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Rejestrowanie zdarzeń systemowych przez Spring AOP}{3}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Część serwerowa}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Spring Boot REST API}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Spring Data JPA i Hibernate}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}PostgreSQL}{4}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}JWT i Spring Security}{4}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Spring AOP do logowania zdarzeń}{4}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Część kliencka}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Flutter}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Komunikacja z REST API}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Logowanie i przechowywanie tokena JWT}{5}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Podstawowe ekrany aplikacji}{5}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Prezentacja wybranych testów}{6}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Testy backendu}{6}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Testy klienta}{6}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Przykładowe przypadki testowe}{6}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Informacja uruchomieniowa i wdrożeniowa}{7}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Wymagania}{7}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Uruchomienie lokalne backendu}{7}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Uruchomienie bazy PostgreSQL w Dockerze}{7}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Uruchomienie całego backendu przez docker-compose}{8}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Uruchomienie aplikacji Flutter}{8}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}Wdrożenie na maszynie wirtualnej ZTI}{9}{subsection.6.6}%
+\contentsline {section}{\numberline {7}Podstawowy podręcznik użytkownika}{9}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Rejestracja konta}{9}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Logowanie}{9}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Utworzenie grupy}{9}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Dołączenie do grupy kodem}{9}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Dodanie produktu do listy zakupów}{9}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}Oznaczenie produktu jako kupione}{9}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}Dodanie posiłku do planu}{10}{subsection.7.7}%
+\contentsline {subsection}{\numberline {7.8}Dodanie przepisu}{10}{subsection.7.8}%
+\contentsline {section}{\numberline {8}Podsumowanie}{10}{section.8}%
